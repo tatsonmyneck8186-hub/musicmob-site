@@ -1,0 +1,206 @@
+﻿<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Music Mob</title>
+  <link rel='stylesheet' href='style.css'>
+</head>
+<body>
+  <header class='topbar'>
+    <a class='brand' href='#' aria-label='Music Mob home'><img src='assets/music-mob-logo.png' alt='Music Mob'></a>
+    <nav class='nav'>
+      <a href='#' class='active'>HOME</a>
+      <a href='#examples'>EXAMPLES</a>
+      <a href='studio.html'>STUDIO</a>
+      <a href='#works'>HOW IT WORKS</a>
+      <a href='#faq'>FAQ</a>
+    </nav>
+    <a href='#order' class='top-btn'>ORDER NOW</a>
+  </header>
+
+  <main>
+    <section class='hero'>
+      <div class='hero-copy'>
+        <h1>YOUR IDEA.<br><span>OUR STUDIO.</span><br>YOUR SONG.</h1>
+        <p class='lead'>Send us any song idea, concept, or vibe.</p>
+        <p class='sublead'>We'll turn it into a custom rap or R&amp;B song in 24 hours.</p>
+
+        <div class='studio-strip'>
+          <div>
+            <span>LIVE CUSTOM QUEUE</span>
+            <strong>Built from your prompt. Delivered to your inbox.</strong>
+          </div>
+          <a href='#examples'>Hear examples</a>
+        </div>
+
+        <div class='feature-row'>
+          <div class='feature'><span>24H</span><strong>Fast Delivery</strong><small>Sent to your inbox</small></div>
+          <div class='feature'><span>100%</span><strong>Custom Made</strong><small>Built from your idea</small></div>
+          <div class='feature'><span>PRO</span><strong>Studio Polish</strong><small>Clean MP3 delivery</small></div>
+        </div>
+      </div>
+
+      <div class='backdrop-logo' aria-hidden='true'>MUSIC<br><span>MOB</span></div>
+
+      <aside id='order' class='order-card'>
+        <h2>MUSIC MOB CUSTOM SONG</h2>
+        <div class='price'>$9.99 <small>USD</small></div>
+        <div class='rule'></div>
+        <p class='card-copy'>Tell us your idea. We'll turn it into a hit.</p>
+
+        <form id='song-request-form' action='https://formsubmit.co/j.cooper@musicmob.me' method='POST'>
+          <input type='hidden' name='_subject' value='New Music Mob Song Request'>
+          <input type='hidden' name='_captcha' value='false'>
+          <input type='hidden' name='_next' value='https://buy.stripe.com/5kQdR84Zv7mHc4FdbG4wM00'>
+          <textarea name='song_idea' placeholder='Song idea, concept, or vibe' required></textarea>
+          <select name='genre' required>
+            <option value='' selected disabled>Choose genre</option>
+            <option value='Rap'>Rap</option>
+            <option value='Hip-Hop'>Hip-Hop</option>
+            <option value='R&B'>R&amp;B</option>
+            <option value='Trap'>Trap</option>
+            <option value='Drill'>Drill</option>
+            <option value='Pop Rap'>Pop Rap</option>
+            <option value='Afrobeats'>Afrobeats</option>
+            <option value='Other'>Other</option>
+          </select>
+          <input name='reference_artist' placeholder='Reference artist'>
+          <input type='text' name='email' placeholder='Your email' inputmode='email' autocomplete='email' required>
+          <button type='submit'>SEND REQUEST &amp; CHECKOUT</button>
+        </form>
+        <p class='stripe-note'>Secure checkout &bull; Powered by Stripe</p>
+
+        <div class='benefits'>
+          <div class='benefit'><span>&#10003;</span><div><strong>SAFE &amp; SECURE PAYMENT</strong><small>Your payment is protected by Stripe.</small></div></div>
+          <div class='benefit'><span>24</span><div><strong>24 HOUR DELIVERY</strong><small>Your song delivered within 24 hours.</small></div></div>
+          <div class='benefit'><span>&#9834;</span><div><strong>100% CUSTOM MADE</strong><small>Every song is made from scratch for you.</small></div></div>
+        </div>
+      </aside>
+    </section>
+
+    <section id='examples' class='examples section-band'>
+      <p class='eyebrow'>EXAMPLES</p>
+      <h3>CHOOSE A LANE. WE BUILD THE RECORD.</h3>
+      <div class='examples-grid'>
+        <article class='example-card'>
+          <span>01</span>
+          <h4>NO WARNING</h4>
+          <p>Hard-hitting custom rap energy with a direct, cinematic feel.</p>
+          <audio controls preload='metadata'>
+            <source src='assets/audio/no-warning.mp3' type='audio/mpeg'>
+            Your browser does not support the audio player.
+          </audio>
+          <small>Preview track</small>
+        </article>
+        <article class='example-card'>
+          <span>02</span>
+          <h4>Hellcat Ashtray</h4>
+          <p>Dark flex record with polished bounce and street-luxury attitude.</p>
+          <audio controls preload='metadata'>
+            <source src='assets/audio/hellcat-ashtray.mp3' type='audio/mpeg'>
+            Your browser does not support the audio player.
+          </audio>
+          <small>Preview track</small>
+        </article>
+        <article class='example-card'>
+          <span>03</span>
+          <h4>Black Hoodie</h4>
+          <p>Moody hip-hop tone with a clean, late-night custom-song pocket.</p>
+          <audio controls preload='metadata'>
+            <source src='assets/audio/black-hoodie.mp3' type='audio/mpeg'>
+            Your browser does not support the audio player.
+          </audio>
+          <small>Preview track</small>
+        </article>
+        <article class='example-card'>
+          <span>04</span>
+          <h4>Yellow Tape Candles</h4>
+          <p>Gritty storytelling atmosphere with an elevated rap/R&amp;B edge.</p>
+          <audio controls preload='metadata'>
+            <source src='assets/audio/yellow-tape-candles.mp3' type='audio/mpeg'>
+            Your browser does not support the audio player.
+          </audio>
+          <small>Preview track</small>
+        </article>
+      </div>
+      <p class='legal-note'>Examples describe style direction only. Final songs are original custom works based on the details you submit.</p>
+    </section>
+
+    <section id='works' class='steps section-band'>
+      <p class='eyebrow'>HOW IT WORKS</p>
+      <h3>SIMPLE. FAST. PROFESSIONAL.</h3>
+      <div class='steps-grid'>
+        <article>
+          <div class='step-icon'>CART</div>
+          <h4>01</h4>
+          <h5>SEND YOUR REQUEST</h5>
+          <p>Fill out the form with your idea, genre, reference artist, and delivery email.</p>
+        </article>
+        <div class='step-arrow'>&rsaquo;</div>
+        <article>
+          <div class='step-icon'>IDEA</div>
+          <h4>02</h4>
+          <h5>SECURE CHECKOUT</h5>
+          <p>After the request is submitted, you are taken to Stripe to complete payment securely.</p>
+        </article>
+        <div class='step-arrow'>&rsaquo;</div>
+        <article>
+          <div class='step-icon'>WAVE</div>
+          <h4>03</h4>
+          <h5>WE CREATE YOUR SONG</h5>
+          <p>We produce your custom rap or R&amp;B song.</p>
+        </article>
+        <div class='step-arrow'>&rsaquo;</div>
+        <article>
+          <div class='step-icon'>MP3</div>
+          <h4>04</h4>
+          <h5>DELIVERED IN 24 HOURS</h5>
+          <p>You'll receive your high-quality MP3 via email.</p>
+        </article>
+      </div>
+      <p class='legal-note'>Delivery timing begins after both the song request and successful payment are received. Orders with missing details may require follow-up before production starts.</p>
+    </section>
+
+    <section id='faq' class='faq section-band'>
+      <p class='eyebrow'>FAQ</p>
+      <h3>CLEAR TERMS. NO WEIRD SURPRISES.</h3>
+      <div class='faq-grid'>
+        <details open>
+          <summary>What do I get for $9.99?</summary>
+          <p>You receive one custom song concept delivered as an MP3 to the email you provide. The song is created from your submitted idea, genre, and reference direction.</p>
+        </details>
+        <details>
+          <summary>Do I pay before or after submitting my idea?</summary>
+          <p>Submit the form first. After your request is sent, you are redirected to Stripe checkout. Production begins once payment is completed.</p>
+        </details>
+        <details>
+          <summary>Can I use a reference artist?</summary>
+          <p>Yes. Reference artists are used only to understand vibe, tempo, genre, or energy. We do not copy protected songs, lyrics, melodies, voices, or artist identities.</p>
+        </details>
+        <details>
+          <summary>Who owns the song?</summary>
+          <p>You may use the delivered custom song for personal and promotional use. Music Mob keeps the right to use short previews for portfolio or marketing unless you request privacy by email.</p>
+        </details>
+        <details>
+          <summary>Are refunds available?</summary>
+          <p>Because each song is custom work, completed orders are generally non-refundable once production starts. If we cannot complete your order, we will contact you about a replacement or refund.</p>
+        </details>
+        <details>
+          <summary>Do you allow offensive or illegal content?</summary>
+          <p>No. We may refuse requests involving threats, harassment, explicit illegal activity, impersonation, or content that violates platform/payment rules.</p>
+        </details>
+      </div>
+      <p class='legal-note'>This FAQ is customer information, not legal advice. For commercial releases, publishing, samples, or rights questions, consult a qualified professional.</p>
+    </section>
+  </main>
+
+  <footer class='footer'>
+    <a class='brand' href='#' aria-label='Music Mob home'><img src='assets/music-mob-logo.png' alt='Music Mob'></a>
+    <p>Real music. Real fast.<br><strong>Made for artists. By artists.</strong></p>
+    <a class='contact-link' href='mailto:j.cooper@musicmob.me'>j.cooper@musicmob.me</a>
+    <small>&copy; 2024 Music Mob. All rights reserved.</small>
+  </footer>
+</body>
+</html>
+

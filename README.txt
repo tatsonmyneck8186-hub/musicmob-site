@@ -1,0 +1,1 @@
+Replace REPLACE_WITH_YOUR_STRIPE_PUBLISHABLE_KEY with your real Stripe publishable key.

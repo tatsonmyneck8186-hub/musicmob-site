@@ -1,0 +1,9 @@
+{
+  "name": "musicmob-site",
+  "private": true,
+  "version": "1.0.0",
+  "description": "MusicMob static site for Railway",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
