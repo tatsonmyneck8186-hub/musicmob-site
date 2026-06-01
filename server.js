@@ -6,7 +6,7 @@ const path = require("path");
 const PORT = Number(process.env.PORT || 8080);
 const HOST = "0.0.0.0";
 const ROOT = __dirname;
-const CANONICAL_HOST = "www.musicmob.me";
+const CANONICAL_HOST = "musicmob.me";
 const HOSTED_CHECKOUT_URL = "https://buy.stripe.com/5kQdR84Zv7mHc4FdbG4wM00";
 
 const MIME = {
@@ -145,7 +145,7 @@ async function handleCreateCheckoutSession(req, res) {
     customer_email: email,
     client_reference_id: orderId,
     "metadata[order_id]": orderId,
-    "metadata[source]": "www.musicmob.me",
+    "metadata[source]": "musicmob.me",
     "metadata[email]": email,
     "metadata[genre]": genre,
     "metadata[song_idea]": songIdea,
