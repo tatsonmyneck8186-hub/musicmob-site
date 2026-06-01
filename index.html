@@ -4,11 +4,20 @@
   <meta charset='UTF-8'>
   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
   <title>Music Mob</title>
+  <meta name='description' content='MusicMob turns your song idea into a custom rap or R&B song, with secure checkout and fast MP3 delivery.'>
+  <meta property='og:title' content='MusicMob Custom Songs'>
+  <meta property='og:description' content='Send your idea. MusicMob turns it into a custom song.'>
+  <meta property='og:type' content='website'>
+  <meta property='og:url' content='https://musicmob.me/'>
+  <meta property='og:image' content='https://musicmob.me/assets/hero-2026-hiphop.png'>
+  <meta name='twitter:card' content='summary_large_image'>
+  <link rel='canonical' href='https://musicmob.me/'>
+  <link rel='icon' href='assets/favicon.svg' type='image/svg+xml'>
   <link rel='stylesheet' href='style.css'>
 </head>
 <body>
   <header class='topbar'>
-    <a class='brand' href='#' aria-label='Music Mob home'><img src='assets/music-mob-logo.png' alt='Music Mob'></a>
+    <a class='brand' href='#' aria-label='Music Mob home'><img src='assets/music-mob-logo-small.png' alt='Music Mob'></a>
     <nav class='nav'>
       <a href='#' class='active'>HOME</a>
       <a href='#examples'>EXAMPLES</a>
@@ -26,13 +35,13 @@
         <p class='lead'>Send us any song idea, concept, or vibe.</p>
         <p class='sublead'>We'll turn it into a custom rap or R&amp;B song in 24 hours.</p>
 
-        <div class='studio-strip'>
+        <a class='studio-strip' href='studio.html' aria-label='Open MusicMob Studio remote album production page'>
           <div>
-            <span>LIVE CUSTOM QUEUE</span>
-            <strong>Built from your prompt. Delivered to your inbox.</strong>
+            <span>REMOTE ALBUM PRODUCTION</span>
+            <strong>Build singles, EPs, or full album concepts online with MusicMob Studio.</strong>
           </div>
-          <a href='#examples'>Hear examples</a>
-        </div>
+          <span class='strip-cta'>Open Studio</span>
+        </a>
 
         <div class='feature-row'>
           <div class='feature'><span>24H</span><strong>Fast Delivery</strong><small>Sent to your inbox</small></div>
@@ -49,10 +58,7 @@
         <div class='rule'></div>
         <p class='card-copy'>Tell us your idea. We'll turn it into a hit.</p>
 
-        <form id='song-request-form' action='https://formsubmit.co/j.cooper@musicmob.me' method='POST'>
-          <input type='hidden' name='_subject' value='New Music Mob Song Request'>
-          <input type='hidden' name='_captcha' value='false'>
-          <input type='hidden' name='_next' value='https://buy.stripe.com/5kQdR84Zv7mHc4FdbG4wM00'>
+        <form id='song-request-form' action='/create-checkout-session' method='POST'>
           <textarea name='song_idea' placeholder='Song idea, concept, or vibe' required></textarea>
           <select name='genre' required>
             <option value='' selected disabled>Choose genre</option>
@@ -180,7 +186,7 @@
         </details>
         <details>
           <summary>Who owns the song?</summary>
-          <p>You may use the delivered custom song for personal and promotional use. Music Mob keeps the right to use short previews for portfolio or marketing unless you request privacy by email.</p>
+          <p>You keep full rights to your finished custom song, including the ability to release, monetize, and earn royalties from it. MusicMob may use short previews for portfolio or marketing unless you request privacy by email.</p>
         </details>
         <details>
           <summary>Are refunds available?</summary>
@@ -196,9 +202,14 @@
   </main>
 
   <footer class='footer'>
-    <a class='brand' href='#' aria-label='Music Mob home'><img src='assets/music-mob-logo.png' alt='Music Mob'></a>
+    <a class='brand' href='#' aria-label='Music Mob home'><img src='assets/music-mob-logo-small.png' alt='Music Mob'></a>
     <p>Real music. Real fast.<br><strong>Made for artists. By artists.</strong></p>
     <a class='contact-link' href='mailto:j.cooper@musicmob.me'>j.cooper@musicmob.me</a>
+    <nav class='footer-links' aria-label='Legal links'>
+      <a href='privacy.html'>Privacy</a>
+      <a href='terms.html'>Terms</a>
+      <a href='refund-policy.html'>Refunds</a>
+    </nav>
     <small>&copy; 2024 Music Mob. All rights reserved.</small>
   </footer>
 </body>

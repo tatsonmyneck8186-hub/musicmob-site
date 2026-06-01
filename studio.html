@@ -1,137 +1,107 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang='en'>
 <head>
   <meta charset='UTF-8'>
   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
   <title>MusicMob Studio</title>
-  <link rel='preconnect' href='https://fonts.googleapis.com'>
-  <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
-  <link href='https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;900&family=Inter:wght@400;500;600;700&display=swap' rel='stylesheet'>
-  <style>
-    :root{
-      --bg:#040405;--line:rgba(255,255,255,.1);--text:#f4f4f6;--muted:#a4a4ab;
-      --red:#cc1028;--red-neon:#ff2b4a;--red-hot:#ff4a63;
-    }
-    *{box-sizing:border-box} html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,sans-serif;overflow-x:hidden}
-    a{text-decoration:none;color:inherit}
-    .page{min-height:100vh;position:relative;background:radial-gradient(circle at 12% 15%, rgba(255,35,67,.16), transparent 35%),radial-gradient(circle at 88% 82%, rgba(145,0,20,.18), transparent 40%),linear-gradient(180deg,#010102 0%, #050507 52%, #010102 100%)}
-    .page:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.1;background-image:radial-gradient(rgba(255,255,255,.2) 1px, transparent 1px);background-size:3px 3px;mix-blend-mode:soft-light}
-
-    .nav{position:sticky;top:0;z-index:30;background:rgba(8,8,10,.72);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-    .nav-inner{max-width:1240px;margin:0 auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
-    .brand{display:flex;align-items:center;gap:14px}
-    .site-logo{width:170px;height:auto;display:block}
-    .links{display:flex;gap:22px}
-    .links a{font-size:.8rem;text-transform:uppercase;letter-spacing:.13em;color:#cdced3;transition:.26s}
-    .links a:hover,.links a.active{color:#fff;text-shadow:0 0 18px rgba(255,43,74,.35)}
-
-    .studio{max-width:1240px;margin:54px auto 78px;padding:0 24px;display:grid;grid-template-columns:1fr 1fr;gap:20px;position:relative;transform:translateX(-24px)}
-    .studio:before{content:"STUDIO";position:absolute;left:-16%;top:-76px;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(8rem,16vw,17rem);letter-spacing:.05em;color:rgba(255,255,255,.022);text-transform:uppercase;pointer-events:none}
-    .studio:after{content:"ONLINE";position:absolute;right:-18%;bottom:-62px;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(7rem,14vw,15rem);letter-spacing:.09em;color:rgba(255,38,67,.052);text-transform:uppercase;pointer-events:none}
-    .ghost{position:absolute;left:-11%;bottom:20%;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(6rem,12vw,12rem);letter-spacing:.07em;color:rgba(255,255,255,.02);text-transform:uppercase;transform:rotate(-2deg)}
-    .count{position:absolute;right:30%;top:-2%;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(11rem,22vw,24rem);color:rgba(255,35,66,.075);line-height:.8}
-
-    .left{border:1px solid rgba(255,72,102,.12);border-radius:7px;padding:56px 36px 44px;background:linear-gradient(180deg,rgba(255,255,255,.042),rgba(255,255,255,.008)),radial-gradient(circle at 8% 8%, rgba(255,35,67,.14), transparent 38%);box-shadow:0 36px 120px rgba(0,0,0,.74), inset 0 1px 0 rgba(255,255,255,.06);position:relative;transform:translate(-20px,-16px) rotate(-.6deg)}
-    .left:after{content:"";position:absolute;top:-22px;right:10%;width:2px;height:180px;background:linear-gradient(to bottom,rgba(255,55,84,.75),rgba(255,55,84,0));box-shadow:0 0 24px rgba(255,45,76,.5)}
-    .kicker{font-size:.75rem;letter-spacing:.18em;color:var(--red-neon);font-weight:700;text-transform:uppercase}
-    h1{margin:20px 0 26px;font-family:'Barlow Condensed',sans-serif;font-size:6.7rem;line-height:.72;letter-spacing:.03em;text-transform:uppercase}
-    h1 .hot{color:var(--red-neon);text-shadow:0 0 24px rgba(255,45,76,.6),0 0 44px rgba(255,45,76,.4),0 10px 40px rgba(0,0,0,.75)}
-    .copy{font-size:1rem;line-height:1.75;color:var(--muted);max-width:500px;margin-bottom:34px}
-    .cta{margin-top:24px;display:flex;gap:14px;flex-wrap:wrap}
-    .btn{padding:14px 22px;border-radius:6px;font-size:.79rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;transition:.28s;position:relative;overflow:hidden}
-    .btn:before{content:"";position:absolute;top:0;left:-50%;width:42%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent);transform:skewX(-22deg);transition:.5s}
-    .btn:hover:before{left:130%}
-    .btn-red{background:linear-gradient(135deg,var(--red),var(--red-neon));color:#fff;box-shadow:0 20px 44px rgba(255,41,73,.55),0 0 34px rgba(255,41,73,.44)}
-    .btn-red:hover{transform:translateY(-5px) scale(1.04);box-shadow:0 26px 58px rgba(255,41,73,.68),0 0 44px rgba(255,41,73,.56)}
-    .btn-outline{border:1px solid rgba(255,95,120,.78);color:#ffd8de;background:rgba(255,255,255,.02);box-shadow:0 18px 38px rgba(0,0,0,.48)}
-    .btn-outline:hover{background:rgba(255,32,66,.16);transform:translateY(-5px) scale(1.04)}
-
-    .right{border:1px solid rgba(255,72,102,.1);border-radius:7px;padding:46px 30px 24px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.005)),radial-gradient(circle at 6% 10%, rgba(255,35,67,.14), transparent 40%),linear-gradient(180deg,#050507 0%, #020203 100%);box-shadow:0 32px 110px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.08);position:relative;transform:translate(12px,20px) rotate(.42deg);overflow:hidden}
-    .right:before{content:"STUDIO";position:absolute;right:-22%;top:26%;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:clamp(7rem,15vw,16rem);letter-spacing:.08em;color:rgba(255,255,255,.028);transform:rotate(-90deg)}
-    .right:after{content:"";position:absolute;left:-25%;top:14%;width:80%;height:220px;background:linear-gradient(105deg,transparent 0%,rgba(255,58,86,.17) 52%,transparent 100%);filter:blur(10px);animation:sweep 8s ease-in-out infinite}
-    @keyframes sweep{0%,100%{transform:translateX(-10%) rotate(-8deg);opacity:.28}50%{transform:translateX(38%) rotate(-8deg);opacity:.55}}
-
-    .cards{margin:6px 0 8px;display:grid;gap:18px;position:relative;z-index:2}
-    .cards:before{content:"";position:absolute;inset:8% -10% -8% -10%;background:radial-gradient(circle at 36% 52%, rgba(255,40,70,.2), transparent 60%);filter:blur(28px)}
-    .card{border:1px solid rgba(255,86,112,.098);border-top-color:rgba(255,120,142,.266);border-radius:6px;padding:24px 18px;background:linear-gradient(180deg,rgba(2,2,4,.985),rgba(8,8,12,.86)),radial-gradient(circle at 10% 0%,rgba(255,54,82,.12),transparent 52%);display:grid;grid-template-columns:42px 1fr;gap:12px;position:relative;overflow:hidden;transition:.25s;backdrop-filter:blur(14px);box-shadow:0 20px 56px rgba(0,0,0,.62), inset 0 1px 0 rgba(255,255,255,.05);z-index:1}
-    .card:before{content:"";position:absolute;top:0;left:-45%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);transform:skewX(-22deg);transition:.45s}
-    .card:hover{transform:translateY(-4px) scale(1.018);box-shadow:0 0 58px rgba(255,41,73,.64),0 30px 64px rgba(0,0,0,.74);border-color:rgba(255,118,138,.94)}
-    .card:hover:before{left:130%}
-    .card:nth-child(1){transform:translateX(-10px);padding-top:28px;padding-bottom:28px}
-    .card:nth-child(2){transform:translateX(18px) translateY(-8px) scale(1.03);z-index:3;box-shadow:0 22px 58px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.07)}
-    .card:nth-child(3){transform:translateX(6px) translateY(-16px);z-index:2}
-    .ico{width:34px;height:34px;border:1px solid rgba(255,88,114,.5);border-radius:6px;display:grid;place-items:center;color:var(--red-hot)}
-    .ico svg{width:14px;height:14px;stroke-width:1.4}
-    .card h4{margin:0;font-size:1.3rem;letter-spacing:.02em}
-    .card p{margin:4px 0 0;font-size:.9rem;color:#b3b3b8}
-
-    @media (max-width:1020px){
-      .links{display:none}
-      .studio{grid-template-columns:1fr;transform:none}
-      .left,.right{transform:none}
-      h1{font-size:5.3rem}
-      .studio:before,.studio:after,.ghost,.count{opacity:.6}
-      .card:nth-child(1),.card:nth-child(2),.card:nth-child(3){transform:none}
-    }
-    @media (max-width:560px){
-      .site-logo{width:135px}
-      h1{font-size:3.8rem}
-      .left{padding:24px 16px}
-      .right{padding:24px 16px}
-    }
-  </style>
+  <meta name='description' content='Remote album production with MusicMob Studio: online producers, writers, creative direction, and artist-owned finished music.'>
+  <meta property='og:title' content='MusicMob Studio'>
+  <meta property='og:description' content='Use your voice with online producers and writers to build singles, EPs, or albums.'>
+  <meta property='og:type' content='website'>
+  <meta property='og:url' content='https://musicmob.me/studio.html'>
+  <meta property='og:image' content='https://musicmob.me/assets/hero-2026-hiphop.png'>
+  <meta name='twitter:card' content='summary_large_image'>
+  <link rel='canonical' href='https://musicmob.me/studio.html'>
+  <link rel='icon' href='assets/favicon.svg' type='image/svg+xml'>
+  <link rel='stylesheet' href='style.css'>
 </head>
 <body>
-  <div class='page'>
-    <header class='nav'>
-      <div class='nav-inner'>
-        <div class='brand'>
-          <a href='index.html' class='logo-link'>
-            <img src='assets/musicmob-logo-real.png' alt='MusicMob' class='site-logo'>
-          </a>
-        </div>
-        <nav class='links'>
-          <a href='index.html'>Home</a>
-          <a href='index.html#works'>How It Works</a>
-          <a href='studio.html' class='active'>Studio</a>
-          <a href='index.html#examples'>Samples</a>
-          <a href='index.html#faq'>FAQ</a>
-        </nav>
-      </div>
-    </header>
+  <header class='topbar'>
+    <a class='brand' href='index.html' aria-label='Music Mob home'><img src='assets/music-mob-logo-small.png' alt='Music Mob'></a>
+    <nav class='nav'>
+      <a href='index.html'>HOME</a>
+      <a href='index.html#examples'>EXAMPLES</a>
+      <a href='studio.html' class='active'>STUDIO</a>
+      <a href='index.html#works'>HOW IT WORKS</a>
+      <a href='index.html#faq'>FAQ</a>
+    </nav>
+    <a href='mailto:j.cooper@musicmob.me?subject=MusicMob Studio Quote Request' class='top-btn'>GET QUOTE</a>
+  </header>
 
-    <section class='studio' id='studio'>
-      <div class='ghost'>MOB</div>
-      <div class='count'>01</div>
+  <main>
+    <section class='hero studio-hero'>
+      <div class='hero-copy'>
+        <p class='eyebrow studio-eyebrow'>REMOTE ALBUM PRODUCTION</p>
+        <h1>RECORD YOUR<br><span>ALBUM ONLINE.</span></h1>
+        <p class='lead'>Build singles, EPs, or full album concepts with MusicMob Studio.</p>
+        <p class='sublead'>Use your voice with today's studio technology, online producers, and online writers.</p>
 
-      <div class='left'>
-        <div class='kicker'>MUSICMOB STUDIO</div>
-        <h1>RECORD YOUR<br><span class='hot'>ALBUM ONLINE</span></h1>
-        <p class='copy'>Work with producers, writers, and creative direction online. Build singles, EPs, or full album concepts with a custom quote.</p>
-
-        <div class='cta'>
-          <a class='btn btn-red' href='mailto:j.cooper@musicmob.me?subject=MusicMob Studio Quote Request'>EMAIL FOR QUOTE</a>
-          <a class='btn btn-outline' href='tel:+17866438382'>CALL STUDIO</a>
+        <div class='studio-actions'>
+          <a class='studio-primary' href='mailto:j.cooper@musicmob.me?subject=MusicMob Studio Quote Request'>EMAIL FOR QUOTE</a>
+          <a class='top-btn' href='tel:+17866438382' aria-label='Call MusicMob Studio at 786-643-8382'>CALL MUSICMOB STUDIO</a>
         </div>
       </div>
 
-      <div class='right'>
-        <div class='cards'>
-          <article class='card'>
-            <div class='ico'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor'><path d='M4 18V6l8-3 8 3v12l-8 3-8-3'/><path d='M12 3v18'/></svg></div>
-            <div><h4>Album Direction</h4><p>Creative planning, sonic identity, and release architecture with elite label energy.</p></div>
-          </article>
-          <article class='card'>
-            <div class='ico'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor'><path d='M4 19h16M8 16l2-8 2 6 2-4 2 6'/></svg></div>
-            <div><h4>Writers & Hooks</h4><p>Hook development, topline support, and premium writing polish for replay value.</p></div>
-          </article>
-          <article class='card'>
-            <div class='ico'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor'><rect x='3' y='7' width='18' height='10' rx='2'/><path d='M7 12h.01M12 12h.01M17 12h.01'/></svg></div>
-            <div><h4>Producer Sessions</h4><p>Remote producer sessions, revisions, and mix-ready final delivery with strict confidentiality.</p></div>
-          </article>
+      <div class='backdrop-logo' aria-hidden='true'>STUDIO<br><span>ONLINE</span></div>
+
+      <aside class='studio-panel'>
+        <h2>MUSICMOB STUDIO</h2>
+        <p>Work remotely with producers, writers, and creative direction. Send your voice, your vision, or your idea, and build the record online with a custom quote.</p>
+        <p class='rights-note'>Artists keep full rights to their finished music, including the ability to release, monetize, and earn royalties from their songs.</p>
+        <div class='rule'></div>
+        <div class='benefits'>
+          <div class='benefit'><span>01</span><div><strong>ALBUM DIRECTION</strong><small>Creative planning, sonic identity, and release architecture.</small></div></div>
+          <div class='benefit'><span>02</span><div><strong>WRITERS &amp; HOOKS</strong><small>Hook development, topline support, and writing polish.</small></div></div>
+          <div class='benefit'><span>03</span><div><strong>PRODUCER SESSIONS</strong><small>Remote production, revisions, and mix-ready delivery.</small></div></div>
         </div>
+      </aside>
+    </section>
+
+    <section class='steps section-band studio-services'>
+      <p class='eyebrow'>STUDIO SERVICES</p>
+      <h3>REMOTE. FOCUSED. BUILT AROUND THE RECORD.</h3>
+      <div class='steps-grid'>
+        <article>
+          <div class='step-icon'>PLAN</div>
+          <h4>01</h4>
+          <h5>SHAPE THE SOUND</h5>
+          <p>Define the album direction, mood, references, and release goal.</p>
+        </article>
+        <div class='step-arrow'>&rsaquo;</div>
+        <article>
+          <div class='step-icon'>WRITE</div>
+          <h4>02</h4>
+          <h5>BUILD THE SONGS</h5>
+          <p>Develop hooks, lyrics, arrangements, and production ideas.</p>
+        </article>
+        <div class='step-arrow'>&rsaquo;</div>
+        <article>
+          <div class='step-icon'>REC</div>
+          <h4>03</h4>
+          <h5>REMOTE SESSIONS</h5>
+          <p>Work online with feedback, revisions, and clear next steps.</p>
+        </article>
+        <div class='step-arrow'>&rsaquo;</div>
+        <article>
+          <div class='step-icon'>MP3</div>
+          <h4>04</h4>
+          <h5>FINAL DELIVERY</h5>
+          <p>Receive polished files prepared for your next release move.</p>
+        </article>
       </div>
     </section>
-  </div>
+  </main>
+
+  <footer class='footer'>
+    <a class='brand' href='index.html' aria-label='Music Mob home'><img src='assets/music-mob-logo-small.png' alt='Music Mob'></a>
+    <p>Real music. Real fast.<br><strong>Made for artists. By artists.</strong></p>
+    <a class='contact-link' href='mailto:j.cooper@musicmob.me?subject=MusicMob Studio Quote Request'>j.cooper@musicmob.me</a>
+    <nav class='footer-links' aria-label='Legal links'>
+      <a href='privacy.html'>Privacy</a>
+      <a href='terms.html'>Terms</a>
+      <a href='refund-policy.html'>Refunds</a>
+    </nav>
+    <small>&copy; 2024 Music Mob. All rights reserved.</small>
+  </footer>
 </body>
 </html>
