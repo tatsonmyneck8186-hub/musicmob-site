@@ -13,9 +13,9 @@ Order details:
 The order form posts to /create-checkout-session. Song idea, genre, reference artist, email, and an order id are attached to the Stripe Checkout Session metadata.
 
 Canonical domain:
-https://musicmob.me
+https://www.musicmob.me
 
-The server redirects www.musicmob.me requests to musicmob.me.
+The current Railway plan serves www.musicmob.me as the custom domain. Forward musicmob.me to https://www.musicmob.me at the DNS provider until the plan supports an additional custom domain.
 
 Payments:
 If STRIPE_SECRET_KEY is missing, the form falls back to the existing hosted Stripe checkout link so local previews still work.

@@ -5,8 +5,7 @@ const path = require("path");
 
 const PORT = Number(process.env.PORT || 3000);
 const ROOT = __dirname;
-const CANONICAL_HOST = "musicmob.me";
-const WWW_HOST = "www.musicmob.me";
+const CANONICAL_HOST = "www.musicmob.me";
 const HOSTED_CHECKOUT_URL = "https://buy.stripe.com/5kQdR84Zv7mHc4FdbG4wM00";
 
 const MIME = {
@@ -21,14 +20,6 @@ const MIME = {
   ".ico": "image/x-icon",
   ".mp3": "audio/mpeg"
 };
-
-function getRequestHost(req) {
-  const forwardedHost = req.headers["x-forwarded-host"];
-  const rawHost = Array.isArray(forwardedHost)
-    ? forwardedHost[0]
-    : forwardedHost || req.headers.host || "";
-  return rawHost.split(",")[0].trim().toLowerCase().replace(/:\d+$/, "");
-}
 
 function getOrigin(req) {
   const hostHeader = req.headers["x-forwarded-host"] || req.headers.host || CANONICAL_HOST;
@@ -153,7 +144,7 @@ async function handleCreateCheckoutSession(req, res) {
     customer_email: email,
     client_reference_id: orderId,
     "metadata[order_id]": orderId,
-    "metadata[source]": "musicmob.me",
+    "metadata[source]": "www.musicmob.me",
     "metadata[email]": email,
     "metadata[genre]": genre,
     "metadata[song_idea]": songIdea,
@@ -213,12 +204,6 @@ function serveStatic(req, res) {
 
 http
   .createServer((req, res) => {
-    const host = getRequestHost(req);
-    if (host === WWW_HOST) {
-      redirect(res, 301, `https://${CANONICAL_HOST}${req.url || "/"}`);
-      return;
-    }
-
     const reqPath = (req.url || "/").split("?")[0];
     if (reqPath === "/create-checkout-session") {
       handleCreateCheckoutSession(req, res);
