@@ -3,7 +3,8 @@ const https = require("https");
 const fs = require("fs");
 const path = require("path");
 
-const PORT = Number(process.env.PORT || 3000);
+const PORT = Number(process.env.PORT || 8080);
+const HOST = "0.0.0.0";
 const ROOT = __dirname;
 const CANONICAL_HOST = "www.musicmob.me";
 const HOSTED_CHECKOUT_URL = "https://buy.stripe.com/5kQdR84Zv7mHc4FdbG4wM00";
@@ -212,6 +213,6 @@ http
 
     serveStatic(req, res);
   })
-  .listen(PORT, () => {
-    console.log(`MusicMob running on http://0.0.0.0:${PORT}`);
+  .listen(PORT, HOST, () => {
+    console.log(`MusicMob running on http://${HOST}:${PORT}`);
   });
