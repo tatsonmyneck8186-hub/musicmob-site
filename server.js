@@ -1,5 +1,6 @@
 const http = require("http");
 const https = require("https");
+const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 
@@ -8,6 +9,7 @@ const HOST = "0.0.0.0";
 const ROOT = __dirname;
 const CANONICAL_HOST = "www.musicmob.me";
 const HOSTED_CHECKOUT_URL = "https://buy.stripe.com/5kQdR84Zv7mHc4FdbG4wM00";
+const DEFAULT_NOTIFY_FROM = "MusicMob <onboarding@resend.dev>";
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -64,6 +66,20 @@ function truncate(value, max = 480) {
   return text.length > max ? `${text.slice(0, max - 3)}...` : text;
 }
 
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function formatDollars(cents) {
+  const amount = Number(cents || 0) / 100;
+  return `$${amount.toFixed(2)}`;
+}
+
 function createStripeSession(payload, secretKey) {
   return new Promise((resolve, reject) => {
     const data = new URLSearchParams(payload).toString();
@@ -103,6 +119,155 @@ function createStripeSession(payload, secretKey) {
     request.write(data);
     request.end();
   });
+}
+
+function verifyStripeWebhookSignature(payload, signatureHeader, webhookSecret) {
+  if (!signatureHeader || !webhookSecret) return false;
+
+  const parts = Object.fromEntries(
+    signatureHeader.split(",").map((part) => {
+      const [key, value] = part.split("=");
+      return [key, value];
+    })
+  );
+  const timestamp = parts.t;
+  const expected = parts.v1;
+  if (!timestamp || !expected) return false;
+
+  const signedPayload = `${timestamp}.${payload}`;
+  const actual = crypto.createHmac("sha256", webhookSecret).update(signedPayload).digest("hex");
+  const actualBuffer = Buffer.from(actual, "hex");
+  const expectedBuffer = Buffer.from(expected, "hex");
+  return actualBuffer.length === expectedBuffer.length && crypto.timingSafeEqual(actualBuffer, expectedBuffer);
+}
+
+function sendEmailWithResend({ to, from, subject, html, text }) {
+  return new Promise((resolve, reject) => {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      resolve({ skipped: true, reason: "RESEND_API_KEY is not set" });
+      return;
+    }
+
+    const data = JSON.stringify({ from, to, subject, html, text });
+    const request = https.request(
+      {
+        hostname: "api.resend.com",
+        path: "/emails",
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(data)
+        }
+      },
+      (response) => {
+        let responseBody = "";
+        response.on("data", (chunk) => {
+          responseBody += chunk;
+        });
+        response.on("end", () => {
+          if (response.statusCode < 200 || response.statusCode >= 300) {
+            reject(new Error(`Resend email failed: ${responseBody}`));
+            return;
+          }
+          resolve({ skipped: false });
+        });
+      }
+    );
+    request.on("error", reject);
+    request.write(data);
+    request.end();
+  });
+}
+
+async function notifyPaidOrder(session) {
+  const to = process.env.ORDER_NOTIFY_EMAIL || "j.cooper@musicmob.me";
+  const from = process.env.ORDER_NOTIFY_FROM || DEFAULT_NOTIFY_FROM;
+  const metadata = session.metadata || {};
+  const orderId = metadata.order_id || session.client_reference_id || session.id;
+  const email = metadata.email || session.customer_email || "not provided";
+  const genre = metadata.genre || "not provided";
+  const songIdea = metadata.song_idea || "not provided";
+  const referenceArtist = metadata.reference_artist || "none";
+  const amount = formatDollars(session.amount_total);
+
+  const subject = `Paid MusicMob order: ${orderId}`;
+  const text = [
+    "A MusicMob order was paid.",
+    "",
+    `Order ID: ${orderId}`,
+    `Customer email: ${email}`,
+    `Amount: ${amount}`,
+    `Genre: ${genre}`,
+    `Reference artist: ${referenceArtist}`,
+    "",
+    "Song idea:",
+    songIdea,
+    "",
+    `Stripe session: ${session.id}`
+  ].join("\n");
+  const html = `
+    <h2>Paid MusicMob order</h2>
+    <p><strong>Order ID:</strong> ${escapeHtml(orderId)}</p>
+    <p><strong>Customer email:</strong> ${escapeHtml(email)}</p>
+    <p><strong>Amount:</strong> ${escapeHtml(amount)}</p>
+    <p><strong>Genre:</strong> ${escapeHtml(genre)}</p>
+    <p><strong>Reference artist:</strong> ${escapeHtml(referenceArtist)}</p>
+    <p><strong>Song idea:</strong></p>
+    <p>${escapeHtml(songIdea).replace(/\n/g, "<br>")}</p>
+    <p><strong>Stripe session:</strong> ${escapeHtml(session.id)}</p>
+  `;
+
+  return sendEmailWithResend({ to, from, subject, html, text });
+}
+
+async function handleStripeWebhook(req, res) {
+  if (req.method !== "POST") {
+    sendText(res, 405, "Method not allowed");
+    return;
+  }
+
+  let body;
+  try {
+    body = await readRequestBody(req, 256 * 1024);
+  } catch (error) {
+    sendText(res, 413, "Request too large");
+    return;
+  }
+
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    sendText(res, 500, "Stripe webhook is not configured");
+    return;
+  }
+  if (!verifyStripeWebhookSignature(body, req.headers["stripe-signature"], webhookSecret)) {
+    sendText(res, 400, "Invalid Stripe signature");
+    return;
+  }
+
+  let event;
+  try {
+    event = JSON.parse(body);
+  } catch (error) {
+    sendText(res, 400, "Invalid webhook body");
+    return;
+  }
+
+  if (event.type === "checkout.session.completed") {
+    try {
+      const result = await notifyPaidOrder(event.data.object);
+      if (result.skipped) {
+        console.log(`Order email skipped: ${result.reason}`);
+      }
+    } catch (error) {
+      console.error(error);
+      sendText(res, 500, "Order notification failed");
+      return;
+    }
+  }
+
+  sendText(res, 200, "ok");
 }
 
 async function handleCreateCheckoutSession(req, res) {
@@ -208,6 +373,10 @@ http
     const reqPath = (req.url || "/").split("?")[0];
     if (reqPath === "/create-checkout-session") {
       handleCreateCheckoutSession(req, res);
+      return;
+    }
+    if (reqPath === "/stripe-webhook") {
+      handleStripeWebhook(req, res);
       return;
     }
 
