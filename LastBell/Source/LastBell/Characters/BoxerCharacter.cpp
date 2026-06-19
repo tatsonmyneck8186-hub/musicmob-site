@@ -5,8 +5,13 @@
 #include "Components/ComboComponent.h"
 #include "Components/BoxerAudioComponent.h"
 #include "Data/FighterDataAsset.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Materials/MaterialInterface.h"
+#include "UObject/ConstructorHelpers.h"
 
 ABoxerCharacter::ABoxerCharacter()
 {
@@ -17,6 +22,30 @@ ABoxerCharacter::ABoxerCharacter()
     FeedbackComponent = CreateDefaultSubobject<UBoxerFeedbackComponent>(TEXT("FeedbackComponent"));
     ComboComponent = CreateDefaultSubobject<UComboComponent>(TEXT("ComboComponent"));
     AudioComponent = CreateDefaultSubobject<UBoxerAudioComponent>(TEXT("AudioComponent"));
+
+    // Placeholder body: a capsule-ish stack of basic shapes so a code-only boot is
+    // visible even with no skeletal mesh assigned. Replaced by SetSkeletalMesh when
+    // a fighter with a real mesh is loaded.
+    BodyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BodyMesh"));
+    BodyMesh->SetupAttachment(RootComponent);
+    BodyMesh->SetRelativeLocation(FVector(0.f, 0.f, -88.f));
+    BodyMesh->SetRelativeScale3D(FVector(0.9f, 0.9f, 1.75f));
+    BodyMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    BodyMesh->SetCastShadow(true);
+
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> CylinderMesh(
+        TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
+    if (CylinderMesh.Succeeded())
+    {
+        BodyMesh->SetStaticMesh(CylinderMesh.Object);
+    }
+
+    static ConstructorHelpers::FObjectFinder<UMaterialInterface> ShapeMat(
+        TEXT("/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"));
+    if (ShapeMat.Succeeded())
+    {
+        BodyMesh->SetMaterial(0, ShapeMat.Object);
+    }
 
     bUseControllerRotationYaw = false;
     GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -54,17 +83,29 @@ void ABoxerCharacter::LoadFighterData(UFighterDataAsset* Data)
     if (Data->FighterMesh)
     {
         GetMesh()->SetSkeletalMesh(Data->FighterMesh);
+        // A real fighter mesh is present; the placeholder body is no longer needed.
+        BodyMesh->SetVisibility(false);
+
+        UMaterialInstanceDynamic* Mat = GetMesh()->CreateDynamicMaterialInstance(0);
+        if (Mat)
+        {
+            Mat->SetVectorParameterValue("PrimaryColor", Data->PrimaryColor);
+            Mat->SetVectorParameterValue("SecondaryColor", Data->SecondaryColor);
+        }
     }
+    else if (BodyMesh)
+    {
+        // Code-only boot: tint the placeholder body with the fighter's color.
+        BodyMaterial = BodyMesh->CreateDynamicMaterialInstance(0);
+        if (BodyMaterial)
+        {
+            BodyMaterial->SetVectorParameterValue("Color", Data->PrimaryColor);
+        }
+    }
+
     if (Data->AnimClass)
     {
         GetMesh()->SetAnimClass(Data->AnimClass);
-    }
-
-    UMaterialInstanceDynamic* Mat = GetMesh()->CreateDynamicMaterialInstance(0);
-    if (Mat)
-    {
-        Mat->SetVectorParameterValue("PrimaryColor", Data->PrimaryColor);
-        Mat->SetVectorParameterValue("SecondaryColor", Data->SecondaryColor);
     }
 }
 

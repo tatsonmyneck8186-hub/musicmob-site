@@ -11,6 +11,8 @@ class UBoxerFeedbackComponent;
 class UComboComponent;
 class UBoxerAudioComponent;
 class UFighterDataAsset;
+class UStaticMeshComponent;
+class UMaterialInstanceDynamic;
 
 UCLASS(Abstract)
 class LASTBELL_API ABoxerCharacter : public ACharacter, public IBoxerInterface
@@ -34,6 +36,10 @@ public:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<UBoxerAudioComponent> AudioComponent;
+
+    /** Simple placeholder body so a code-only boot is visible without a skeletal mesh. */
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    TObjectPtr<UStaticMeshComponent> BodyMesh;
 
     UFUNCTION(BlueprintCallable, Category = "Boxer")
     void LoadFighterData(UFighterDataAsset* Data);
@@ -98,4 +104,7 @@ protected:
 private:
     FTimerHandle HitStunHandle;
     FTimerHandle DodgeHandle;
+
+    UPROPERTY()
+    TObjectPtr<UMaterialInstanceDynamic> BodyMaterial;
 };

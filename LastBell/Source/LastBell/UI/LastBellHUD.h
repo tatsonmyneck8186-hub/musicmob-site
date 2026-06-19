@@ -54,10 +54,20 @@ public:
     UFUNCTION(BlueprintImplementableEvent, Category = "HUD")
     void UpdateCombo(int32 ComboCount);
 
+    /** Draws health/stamina/timer/round/combo with the canvas when no UMG HUD
+     *  widget is assigned — lets a code-only boot show a real fight UI. */
+    UPROPERTY(EditDefaultsOnly, Category = "HUD")
+    bool bUseDebugHUD = true;
+
+    virtual void DrawHUD() override;
+
 protected:
     virtual void BeginPlay() override;
 
 private:
     TObjectPtr<UUserWidget> ActiveHUDWidget;
     TObjectPtr<UUserWidget> KnockdownWidget;
+
+    void DrawBar(float X, float Y, float Width, float Height, float Fraction,
+        const FLinearColor& FillColor, bool bRightToLeft);
 };

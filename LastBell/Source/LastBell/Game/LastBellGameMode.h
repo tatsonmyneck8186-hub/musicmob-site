@@ -66,6 +66,9 @@ public:
     UFUNCTION(BlueprintPure, Category = "Match")
     int32 GetCurrentRound() const { return CurrentRound; }
 
+    UFUNCTION(BlueprintPure, Category = "Match")
+    float GetRoundTimeRemaining() const { return RoundTimeRemaining; }
+
     UPROPERTY(BlueprintReadOnly, Category = "Match")
     TObjectPtr<ABoxerCharacter> PlayerBoxer;
 

@@ -41,9 +41,24 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
     float AttackRange = 150.f;
 
+    /** Desired spacing from the opponent the simple AI tries to hold while not advancing. */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+    float PreferredSpacing = 130.f;
+
+    /**
+     * Per-frame approach intent set by the controller: +1 advance, -1 retreat, 0 hold.
+     * Applied in Tick so movement is smooth regardless of the controller's think rate.
+     */
+    UFUNCTION(BlueprintCallable, Category = "AI")
+    void SetApproachIntent(float Intent) { ApproachIntent = FMath::Clamp(Intent, -1.f, 1.f); }
+
 protected:
     virtual void BeginPlay() override;
+    virtual void Tick(float DeltaTime) override;
 
     UFUNCTION()
     void OnHealthChanged(float NewHealth, float MaxHealth);
+
+private:
+    float ApproachIntent = 0.f;
 };

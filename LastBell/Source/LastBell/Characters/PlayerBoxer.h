@@ -56,6 +56,10 @@ protected:
 private:
     float HorizontalInput = 0.f;
 
+    /** Builds Enhanced Input assets in C++ when none are assigned, so the game is
+     *  playable from code alone (A/D move, LMB/RMB/E punch, Space dodge, S duck). */
+    void EnsureRuntimeInput();
+
     void OnMoveHorizontal(const FInputActionValue& Value);
     void OnJab(const FInputActionValue& Value);
     void OnHook(const FInputActionValue& Value);

@@ -45,6 +45,15 @@ protected:
 
 private:
     FTimerHandle UpdateTimer;
+    FTimerHandle SimpleThinkTimer;
+
+    /** True when no BehaviorTree asset is assigned — drives the built-in C++ fight loop. */
+    bool bUseSimpleAI = false;
+
+    TWeakObjectPtr<AActor> PlayerRef;
 
     void UpdateBlackboard();
+
+    /** Self-contained combat brain used when no Behavior Tree is set. */
+    void SimpleThink();
 };

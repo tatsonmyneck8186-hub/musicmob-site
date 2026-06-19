@@ -3,12 +3,35 @@
 #include "Components/BoxerStatsComponent.h"
 #include "Core/IBoxerInterface.h"
 #include "Data/FighterDataAsset.h"
+#include "AI/BoxingAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 AAIBoxer::AAIBoxer()
 {
     PersonalityComponent = CreateDefaultSubobject<UBoxingAIPersonalityComponent>(TEXT("PersonalityComponent"));
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+    AIControllerClass = ABoxingAIController::StaticClass();
+}
+
+void AAIBoxer::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    if (!OpponentRef.IsValid() || FMath::IsNearlyZero(ApproachIntent)) return;
+
+    FVector Direction = (OpponentRef->GetActorLocation() - GetActorLocation());
+    Direction.Z = 0.f;
+    const float Dist = Direction.Size();
+    Direction = Direction.GetSafeNormal();
+    if (Direction.IsNearlyZero()) return;
+
+    float SpeedMult = PersonalityComponent ? PersonalityComponent->GetAttackFrequencyMultiplier() : 1.f;
+
+    // Advance toward the opponent but don't crowd past the preferred spacing.
+    if (ApproachIntent > 0.f && Dist <= PreferredSpacing) return;
+
+    float Sign = ApproachIntent > 0.f ? 1.f : -1.f;
+    AddMovementInput(Direction, Sign * SpeedMult);
 }
 
 void AAIBoxer::BeginPlay()

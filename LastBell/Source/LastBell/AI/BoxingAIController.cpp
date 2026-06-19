@@ -3,6 +3,7 @@
 #include "Components/BoxerStatsComponent.h"
 #include "Components/BoxingAIPersonalityComponent.h"
 #include "Core/IBoxerInterface.h"
+#include "Data/FighterDataAsset.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
@@ -22,12 +23,28 @@ void ABoxingAIController::OnPossess(APawn* InPawn)
 
     if (BehaviorTree)
     {
+        bUseSimpleAI = false;
         RunBehaviorTree(BehaviorTree);
+    }
+    else
+    {
+        // No authored Behavior Tree — fall back to the built-in C++ fight loop so
+        // the game is fully playable from code alone.
+        bUseSimpleAI = true;
     }
 }
 
 void ABoxingAIController::StartAI(AActor* PlayerActor)
 {
+    PlayerRef = PlayerActor;
+
+    if (bUseSimpleAI)
+    {
+        GetWorldTimerManager().SetTimer(SimpleThinkTimer, this,
+            &ABoxingAIController::SimpleThink, 0.35f, true);
+        return;
+    }
+
     if (UBlackboardComponent* BB = GetBlackboardComponent())
     {
         BB->SetValueAsObject(BBKeys::Player, PlayerActor);
@@ -41,7 +58,78 @@ void ABoxingAIController::StartAI(AActor* PlayerActor)
 void ABoxingAIController::StopAI()
 {
     GetWorldTimerManager().ClearTimer(UpdateTimer);
+    GetWorldTimerManager().ClearTimer(SimpleThinkTimer);
+    if (AAIBoxer* Boxer = Cast<AAIBoxer>(GetPawn()))
+    {
+        Boxer->SetApproachIntent(0.f);
+    }
     StopMovement();
+}
+
+void ABoxingAIController::SimpleThink()
+{
+    AAIBoxer* Boxer = Cast<AAIBoxer>(GetPawn());
+    if (!Boxer) return;
+
+    const EBoxerState State = Boxer->GetCurrentState();
+    const bool bBusy = State == EBoxerState::Attacking || State == EBoxerState::HitStun ||
+                       State == EBoxerState::KnockedDown || State == EBoxerState::KO ||
+                       State == EBoxerState::Dodging;
+    if (bBusy)
+    {
+        Boxer->SetApproachIntent(0.f);
+        return;
+    }
+
+    UBoxingAIPersonalityComponent* Personality = Boxer->PersonalityComponent;
+    const float HealthPct = Boxer->StatsComponent ? Boxer->StatsComponent->GetHealthPercent() : 1.f;
+    const float Dist = Boxer->GetDistanceToOpponent();
+
+    // Defensive reaction: slip an incoming punch.
+    const float DodgeChance = Personality ? Personality->GetDodgeProbability() : 0.2f;
+    if (Boxer->IsOpponentAttacking() && Dist < Boxer->AttackRange * 1.4f && FMath::FRand() < DodgeChance)
+    {
+        Boxer->SetApproachIntent(0.f);
+        Boxer->AIExecuteDodge();
+        return;
+    }
+
+    // Retreat briefly when hurt and not in comeback mode.
+    const bool bComeback = Personality && Personality->IsInComebackMode();
+    if (HealthPct < 0.18f && !bComeback && FMath::FRand() < 0.4f)
+    {
+        Boxer->SetApproachIntent(-1.f);
+        return;
+    }
+
+    if (Dist <= Boxer->AttackRange)
+    {
+        Boxer->SetApproachIntent(0.f);
+
+        // Throw on a cadence scaled by aggression / fatigue.
+        float AttackChance = 0.5f;
+        if (Personality)
+        {
+            AttackChance = 0.35f * Personality->GetAttackFrequencyMultiplier();
+            if (bComeback) AttackChance += 0.2f;
+        }
+
+        if (FMath::FRand() < AttackChance)
+        {
+            FVector W = Boxer->GetFighterData() ? Boxer->GetFighterData()->Personality.MoveWeights : FVector(0.6f, 0.3f, 0.1f);
+            const float Total = FMath::Max(0.01f, W.X + W.Y + W.Z);
+            const float Roll = FMath::FRandRange(0.f, Total);
+            EBoxingMove Move = EBoxingMove::Jab;
+            if (Roll > W.X + W.Y) Move = EBoxingMove::Uppercut;
+            else if (Roll > W.X)  Move = EBoxingMove::Hook;
+            Boxer->AIExecuteAttack(Move);
+        }
+    }
+    else
+    {
+        // Close the distance.
+        Boxer->SetApproachIntent(1.f);
+    }
 }
 
 void ABoxingAIController::UpdateBlackboard()

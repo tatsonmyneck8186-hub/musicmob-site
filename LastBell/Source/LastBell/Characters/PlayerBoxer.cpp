@@ -3,6 +3,9 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "InputMappingContext.h"
+#include "InputAction.h"
+#include "InputModifiers.h"
 #include "Components/BoxerFeedbackComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -25,6 +28,8 @@ void APlayerBoxer::BeginPlay()
 {
     Super::BeginPlay();
 
+    EnsureRuntimeInput();
+
     if (APlayerController* PC = Cast<APlayerController>(GetController()))
     {
         if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
@@ -36,6 +41,42 @@ void APlayerBoxer::BeginPlay()
             }
         }
     }
+}
+
+void APlayerBoxer::EnsureRuntimeInput()
+{
+    // If a designer already wired up Input Action assets in Blueprint, respect them.
+    if (IA_Jab)
+    {
+        return;
+    }
+
+    auto MakeAction = [this](EInputActionValueType Type)
+    {
+        UInputAction* Action = NewObject<UInputAction>(this);
+        Action->ValueType = Type;
+        return Action;
+    };
+
+    IA_MoveHorizontal = MakeAction(EInputActionValueType::Axis1D);
+    IA_Jab            = MakeAction(EInputActionValueType::Boolean);
+    IA_Hook           = MakeAction(EInputActionValueType::Boolean);
+    IA_Uppercut       = MakeAction(EInputActionValueType::Boolean);
+    IA_Dodge          = MakeAction(EInputActionValueType::Boolean);
+    IA_Duck           = MakeAction(EInputActionValueType::Boolean);
+
+    UInputMappingContext* IMC = NewObject<UInputMappingContext>(this);
+    IMC->MapKey(IA_Jab, EKeys::LeftMouseButton);
+    IMC->MapKey(IA_Hook, EKeys::RightMouseButton);
+    IMC->MapKey(IA_Uppercut, EKeys::E);
+    IMC->MapKey(IA_Dodge, EKeys::SpaceBar);
+    IMC->MapKey(IA_Duck, EKeys::S);
+
+    IMC->MapKey(IA_MoveHorizontal, EKeys::D);
+    FEnhancedActionKeyMapping& LeftMap = IMC->MapKey(IA_MoveHorizontal, EKeys::A);
+    LeftMap.Modifiers.Add(NewObject<UInputModifierNegate>(this));
+
+    DefaultMappingContext = IMC;
 }
 
 void APlayerBoxer::Tick(float DeltaTime)
@@ -61,6 +102,8 @@ void APlayerBoxer::Tick(float DeltaTime)
 void APlayerBoxer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+    EnsureRuntimeInput();
 
     if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(PlayerInputComponent))
     {

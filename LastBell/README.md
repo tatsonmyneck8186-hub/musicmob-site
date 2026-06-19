@@ -2,6 +2,20 @@
 
 A complete Unreal Engine 5.7 arcade boxing game with original characters, C++ gameplay logic, and Blueprint UI.
 
+## Quick Play (code-only, no asset setup)
+
+The project can boot straight into a playable fight from C++ alone — no hand-authored maps, Data Assets, or Blueprints required:
+
+1. Open `LastBell.uproject` (let it compile the C++ module when prompted).
+2. **File → New Level → Empty Level**.
+3. Press **Play**.
+
+`ALastBellArenaGameMode` (the project's default game mode) procedurally spawns the ring, crowd, lighting, both fighters, builds runtime fighter data, wires up input, and starts the match. A canvas debug HUD draws health/stamina bars, the round timer, and the combo counter. The opponent is driven by a self-contained C++ AI that works without a Behavior Tree asset. Fighters appear as colored capsule bodies (placeholder meshes) until you assign skeletal meshes.
+
+To choose which archetype you face, select the spawned `LastBellArenaGameMode` and change **Opponent Type** (Rookie / Counter / Heavyweight), or set it on a game-mode Blueprint subclass.
+
+For the full authored experience (menus, character select, animations, real meshes, UMG HUD), follow `SETUP_GUIDE.md` and point `GlobalDefaultGameMode` back at the Blueprint game mode.
+
 ## Controls
 
 | Key | Action |
