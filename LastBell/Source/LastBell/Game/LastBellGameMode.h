@@ -91,6 +91,9 @@ protected:
      *  arena game mode overrides this to stay in-world (poses + rematch). */
     virtual void HandleMatchEnd(bool bPlayerWon);
 
+    /** Cancel an in-progress match (used when abandoning back to a menu). */
+    void AbortMatch();
+
     bool bMatchPlayerWon = false;
 
 private:

@@ -52,6 +52,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Combat")
     bool CanStartAttack() const { return bCombatEnabled && !bIsAttacking && !bIsDodging; }
 
+    UFUNCTION(BlueprintCallable, Category = "Combat")
+    bool IsCombatEnabled() const { return bCombatEnabled; }
+
     UFUNCTION(BlueprintPure, Category = "Combat")
     EAttackPhase GetCurrentAttackPhase() const;
 

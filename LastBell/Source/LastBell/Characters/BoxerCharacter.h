@@ -14,6 +14,8 @@ class UFighterDataAsset;
 class UStaticMeshComponent;
 class USceneComponent;
 class UMaterialInstanceDynamic;
+class AImpactSparkActor;
+class ACrowdActor;
 
 UCLASS(Abstract)
 class LASTBELL_API ABoxerCharacter : public ACharacter, public IBoxerInterface
@@ -140,6 +142,10 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ring")
     float RingBoundsY = 400.f;
 
+    /** Procedural punch-impact effect spawned when a hit lands. */
+    UPROPERTY(EditDefaultsOnly, Category = "Effects")
+    TSubclassOf<AImpactSparkActor> ImpactSparkClass;
+
 private:
     FTimerHandle HitStunHandle;
     FTimerHandle DodgeHandle;
@@ -149,6 +155,10 @@ private:
     void TintBody();
     void UpdateProceduralAnim(float DeltaTime);
     UStaticMeshComponent* MakePart(const FName& Name, USceneComponent* Parent);
+
+    void SpawnImpactSpark(const FVector& Location, const FLinearColor& Color, float Scale, bool bBigFlash);
+    ACrowdActor* FindCrowd();
+    TWeakObjectPtr<ACrowdActor> CrowdRef;
 
     UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> SkinMat;
     UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> TrunkMat;

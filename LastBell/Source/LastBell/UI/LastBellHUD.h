@@ -78,4 +78,9 @@ private:
         const FLinearColor& Fill, bool bRightToLeft, const FString& Label);
     void DrawShadowText(const FString& Text, const FLinearColor& Color,
         float X, float Y, float Scale, bool bCenter);
+
+    void DrawFightHUD(class ALastBellGameMode* GM);
+    void DrawMainMenu(int32 MenuIndex);
+    void DrawOpponentSelect(int32 SelectIndex);
+    void DrawResultBanner(bool bPlayerWon);
 };

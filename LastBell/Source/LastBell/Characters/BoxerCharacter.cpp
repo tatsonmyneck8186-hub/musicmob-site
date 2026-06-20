@@ -5,11 +5,14 @@
 #include "Components/ComboComponent.h"
 #include "Components/BoxerAudioComponent.h"
 #include "Data/FighterDataAsset.h"
+#include "Environment/ImpactSparkActor.h"
+#include "Environment/CrowdActor.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 #include "UObject/ConstructorHelpers.h"
@@ -25,6 +28,8 @@ ABoxerCharacter::ABoxerCharacter()
     AudioComponent = CreateDefaultSubobject<UBoxerAudioComponent>(TEXT("AudioComponent"));
 
     BuildBody();
+
+    ImpactSparkClass = AImpactSparkActor::StaticClass();
 
     bUseControllerRotationYaw = false;
     GetCharacterMovement()->bOrientRotationToMovement = false;
@@ -333,6 +338,7 @@ void ABoxerCharacter::ReceiveHit_Implementation(FAttackData AttackData, AActor* 
 
 void ABoxerCharacter::ExecuteDodge_Implementation()
 {
+    if (!CombatComponent->IsCombatEnabled()) return;
     if (CurrentState == EBoxerState::Attacking) return;
     if (CurrentState == EBoxerState::Victory || CurrentState == EBoxerState::Defeat) return;
     DodgeDir = FMath::RandBool() ? 1.f : -1.f;
@@ -346,6 +352,7 @@ void ABoxerCharacter::ExecuteDodge_Implementation()
 
 void ABoxerCharacter::ExecuteDuck_Implementation()
 {
+    if (!CombatComponent->IsCombatEnabled()) return;
     if (CurrentState == EBoxerState::Attacking) return;
     if (CurrentState == EBoxerState::Victory || CurrentState == EBoxerState::Defeat) return;
     CurrentState = EBoxerState::Ducking;
@@ -398,6 +405,10 @@ void ABoxerCharacter::OnKO()
     CurrentState = EBoxerState::KO;
     AudioComponent->PlayDefeat();
     FeedbackComponent->TriggerKOSlowMotion();
+
+    // Big world flash at the knockout.
+    SpawnImpactSpark(GetActorLocation() + FVector(0.f, 0.f, 60.f), FLinearColor(1.f, 0.95f, 0.8f), 1.f, true);
+    if (ACrowdActor* Crowd = FindCrowd()) Crowd->ReactToHeavyHit();
 }
 
 void ABoxerCharacter::OnHitLanded(AActor* Target, FAttackData AttackData)
@@ -406,6 +417,50 @@ void ABoxerCharacter::OnHitLanded(AActor* Target, FAttackData AttackData)
     {
         FeedbackComponent->TriggerScreenFlash(AttackData.ScreenFlashIntensity, AttackData.ScreenFlashDuration);
     }
+
+    if (Target)
+    {
+        const bool bHeavy = AttackData.bCausesScreenFlash || AttackData.Damage >= 15.f;
+        const FVector ToSelf = (GetActorLocation() - Target->GetActorLocation()).GetSafeNormal();
+        const float ImpactZ = (AttackData.TargetZone == EHitZone::Head) ? 120.f : 80.f;
+        const FVector ImpactLoc = Target->GetActorLocation() + ToSelf * 28.f + FVector(0.f, 0.f, ImpactZ);
+        const FLinearColor SparkColor = (AttackData.TargetZone == EHitZone::Head)
+            ? FLinearColor(1.f, 0.95f, 0.65f) : FLinearColor(1.f, 0.55f, 0.4f);
+        SpawnImpactSpark(ImpactLoc, SparkColor, bHeavy ? 1.3f : 0.9f, false);
+
+        if (bHeavy)
+        {
+            if (ACrowdActor* Crowd = FindCrowd()) Crowd->ReactToHeavyHit();
+        }
+    }
+}
+
+void ABoxerCharacter::SpawnImpactSpark(const FVector& Location, const FLinearColor& Color, float Scale, bool bBigFlash)
+{
+    if (!ImpactSparkClass) return;
+    UWorld* World = GetWorld();
+    if (!World) return;
+
+    FActorSpawnParameters Params;
+    Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    if (AImpactSparkActor* Spark = World->SpawnActor<AImpactSparkActor>(ImpactSparkClass, Location, FRotator::ZeroRotator, Params))
+    {
+        Spark->Init(Color, Scale, bBigFlash);
+    }
+}
+
+ACrowdActor* ABoxerCharacter::FindCrowd()
+{
+    if (CrowdRef.IsValid()) return CrowdRef.Get();
+    if (UWorld* World = GetWorld())
+    {
+        if (ACrowdActor* Crowd = Cast<ACrowdActor>(UGameplayStatics::GetActorOfClass(World, ACrowdActor::StaticClass())))
+        {
+            CrowdRef = Crowd;
+            return Crowd;
+        }
+    }
+    return nullptr;
 }
 
 void ABoxerCharacter::OnHitRegistered(EBoxingMove Move)

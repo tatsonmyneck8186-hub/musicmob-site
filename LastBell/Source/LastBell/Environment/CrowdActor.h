@@ -17,14 +17,24 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     TObjectPtr<UInstancedStaticMeshComponent> CrowdMesh;
 
+    /** Spectators per stadium tier. */
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crowd")
-    int32 CrowdCount = 120;
+    int32 PerTier = 64;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crowd")
-    float ArenaRadius = 1200.f;
+    int32 TierCount = 3;
 
-    UFUNCTION(BlueprintCallable, Category = "Crowd")
-    void AnimateCheering();
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crowd")
+    float BaseRadius = 1050.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crowd")
+    float TierRadiusStep = 260.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crowd")
+    float TierHeightStep = 110.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crowd")
+    FLinearColor CrowdColor = FLinearColor(0.03f, 0.03f, 0.05f);
 
     UFUNCTION(BlueprintCallable, Category = "Crowd")
     void ReactToHeavyHit();
@@ -40,9 +50,14 @@ protected:
     virtual void Tick(float DeltaTime) override;
 
 private:
-    bool bCheerLooping = false;
-    float CheerTimer = 0.f;
-    float CheerInterval = 0.5f;
+    TArray<FVector> BaseLocations;
+    TArray<FRotator> BaseRotations;
+    TArray<float> BaseScaleXY;
+    TArray<float> Phases;
+
+    float BounceTime = 0.f;
+    float BounceAmplitude = 7.f;   // ambient
+    float ExcitedTimer = 0.f;       // extra bounce after big hits
 
     void SpawnCrowd();
 };

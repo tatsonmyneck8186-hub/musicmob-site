@@ -184,6 +184,16 @@ void ALastBellGameMode::HandleMatchEnd(bool bPlayerWon)
     }, 3.f, false);
 }
 
+void ALastBellGameMode::AbortMatch()
+{
+    GetWorldTimerManager().ClearTimer(RoundTimerHandle);
+    GetWorldTimerManager().ClearTimer(KnockdownTimerHandle);
+    if (PlayerBoxer) PlayerBoxer->SetBoxerEnabled(false);
+    if (AIBoxerRef)  AIBoxerRef->SetBoxerEnabled(false);
+    CurrentRound = 0;
+    SetMatchState(EMatchState::WaitingToStart);
+}
+
 void ALastBellGameMode::SetMatchState(EMatchState NewState)
 {
     CurrentMatchState = NewState;

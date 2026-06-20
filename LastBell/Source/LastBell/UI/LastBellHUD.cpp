@@ -1,6 +1,7 @@
 #include "UI/LastBellHUD.h"
 #include "Blueprint/UserWidget.h"
 #include "Game/LastBellGameMode.h"
+#include "Game/LastBellArenaGameMode.h"
 #include "Characters/BoxerCharacter.h"
 #include "Components/ComboComponent.h"
 #include "Data/FighterDataAsset.h"
@@ -28,14 +29,11 @@ void ALastBellHUD::DrawPanelBar(float X, float Y, float W, float H, float Fracti
     const FLinearColor& Fill, bool bRightToLeft, const FString& Label)
 {
     Fraction = FMath::Clamp(Fraction, 0.f, 1.f);
-    // Bevel/frame.
     DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.85f), X - 3.f, Y - 3.f, W + 6.f, H + 6.f);
     DrawRect(FLinearColor(0.10f, 0.10f, 0.12f, 1.f), X, Y, W, H);
-    // Fill.
     const float FillW = W * Fraction;
     const float FillX = bRightToLeft ? (X + W - FillW) : X;
     DrawRect(Fill, FillX, Y, FillW, H);
-    // Gloss line.
     DrawRect(FLinearColor(1.f, 1.f, 1.f, 0.18f), FillX, Y, FillW, H * 0.35f);
     if (!Label.IsEmpty())
     {
@@ -58,6 +56,24 @@ void ALastBellHUD::DrawHUD()
         return;
     }
 
+    if (ALastBellArenaGameMode* Arena = Cast<ALastBellArenaGameMode>(GM))
+    {
+        switch (Arena->GetScreen())
+        {
+        case EArenaScreen::MainMenu:        DrawMainMenu(Arena->GetMenuIndex());       return;
+        case EArenaScreen::OpponentSelect:  DrawOpponentSelect(Arena->GetSelectIndex()); return;
+        case EArenaScreen::Fighting:        DrawFightHUD(GM);                          return;
+        case EArenaScreen::Result:          DrawFightHUD(GM); DrawResultBanner(GM->IsPlayerWinner()); return;
+        }
+        return;
+    }
+
+    // Non-arena (authored) game mode: just the fight HUD.
+    DrawFightHUD(GM);
+}
+
+void ALastBellHUD::DrawFightHUD(ALastBellGameMode* GM)
+{
     const float DT = GetWorld() ? GetWorld()->GetDeltaSeconds() : 0.016f;
     const float ScreenW = Canvas->SizeX;
     const float ScreenH = Canvas->SizeY;
@@ -72,25 +88,21 @@ void ALastBellHUD::DrawHUD()
     const FLinearColor HealthCol(0.88f, 0.16f, 0.16f);
     const FLinearColor StamCol(0.95f, 0.78f, 0.12f);
 
-    // ---- Player (left) ----
     if (Player && Player->GetClass()->ImplementsInterface(UBoxerInterface::StaticClass()))
     {
         const float HP = IBoxerInterface::Execute_GetHealthPercent(Player);
         const float ST = IBoxerInterface::Execute_GetStaminaPercent(Player);
         DrawPanelBar(Margin, TopY, BarW, BarH, HP, HealthCol, false, TEXT("YOU"));
         DrawPanelBar(Margin, TopY + BarH + 8.f, BarW, 12.f, ST, StamCol, false, FString());
-
         if (HP <= 0.f && LastPlayerHealth > 0.f) KOFlashTimer = 0.45f;
         LastPlayerHealth = HP;
     }
 
-    // ---- Opponent (right) ----
     if (Opponent && Opponent->GetClass()->ImplementsInterface(UBoxerInterface::StaticClass()))
     {
         const float HP = IBoxerInterface::Execute_GetHealthPercent(Opponent);
         const float ST = IBoxerInterface::Execute_GetStaminaPercent(Opponent);
         const float RX = ScreenW - Margin - BarW;
-
         FString OppName = TEXT("OPPONENT");
         if (ABoxerCharacter* OppChar = Cast<ABoxerCharacter>(Opponent))
         {
@@ -99,19 +111,16 @@ void ALastBellHUD::DrawHUD()
         DrawPanelBar(RX, TopY, BarW, BarH, HP, HealthCol, true, FString());
         DrawShadowText(OppName, FLinearColor::White, RX + BarW, TopY - 22.f, 1.0f, false);
         DrawPanelBar(RX, TopY + BarH + 8.f, BarW, 12.f, ST, StamCol, true, FString());
-
         if (HP <= 0.f && LastOppHealth > 0.f) KOFlashTimer = 0.45f;
         LastOppHealth = HP;
     }
 
-    // ---- Center: round timer + round number ----
     const int32 TimeLeft = FMath::Max(0, FMath::CeilToInt(GM->GetRoundTimeRemaining()));
     DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.55f), ScreenW * 0.5f - 52.f, TopY - 8.f, 104.f, 64.f);
     DrawShadowText(FString::Printf(TEXT("%02d"), TimeLeft), FLinearColor::White, ScreenW * 0.5f, TopY - 4.f, 2.4f, true);
     DrawShadowText(FString::Printf(TEXT("ROUND %d / %d"), FMath::Max(1, GM->GetCurrentRound()), GM->GetTotalRounds()),
         FLinearColor(0.9f, 0.9f, 0.9f), ScreenW * 0.5f, TopY + 56.f, 0.9f, true);
 
-    // ---- Combo meter ----
     if (ABoxerCharacter* PChar = Cast<ABoxerCharacter>(Player))
     {
         if (PChar->ComboComponent)
@@ -129,7 +138,6 @@ void ALastBellHUD::DrawHUD()
     }
     ComboPulse = FMath::FInterpTo(ComboPulse, 0.f, DT, 5.f);
 
-    // ---- Knockdown count (big center) ----
     if (GM->GetMatchState() == EMatchState::Knockdown)
     {
         const int32 Count = GM->GetKnockdownCount();
@@ -139,25 +147,84 @@ void ALastBellHUD::DrawHUD()
         DrawShadowText(TEXT("DOWN!"), FLinearColor(1.f, 0.3f, 0.2f), ScreenW * 0.5f, ScreenH * 0.30f, 1.6f, true);
     }
 
-    // ---- Match result banner ----
-    if (GM->GetMatchState() == EMatchState::MatchOver)
-    {
-        const bool bWon = GM->IsPlayerWinner();
-        DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.6f), 0.f, 0.f, ScreenW, ScreenH);
-        DrawShadowText(bWon ? TEXT("YOU WIN") : TEXT("YOU LOSE"),
-            bWon ? FLinearColor(1.f, 0.84f, 0.2f) : FLinearColor(0.9f, 0.2f, 0.2f),
-            ScreenW * 0.5f, ScreenH * 0.38f, 4.5f, true);
-        DrawShadowText(TEXT("PRESS  R  TO  REMATCH"), FLinearColor::White,
-            ScreenW * 0.5f, ScreenH * 0.54f, 1.3f, true);
-    }
-
-    // ---- KO / impact full-screen flash ----
     if (KOFlashTimer > 0.f)
     {
         const float Alpha = FMath::Clamp(KOFlashTimer / 0.45f, 0.f, 1.f);
         DrawRect(FLinearColor(1.f, 1.f, 1.f, Alpha * 0.8f), 0.f, 0.f, ScreenW, ScreenH);
         KOFlashTimer -= DT;
     }
+}
+
+void ALastBellHUD::DrawMainMenu(int32 MenuIndex)
+{
+    const float ScreenW = Canvas->SizeX;
+    const float ScreenH = Canvas->SizeY;
+
+    DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.45f), 0.f, 0.f, ScreenW, ScreenH);
+    DrawShadowText(TEXT("LAST  BELL"), FLinearColor(1.f, 0.85f, 0.2f), ScreenW * 0.5f, ScreenH * 0.18f, 5.0f, true);
+    DrawShadowText(TEXT("ARCADE  BOXING"), FLinearColor(0.85f, 0.85f, 0.9f), ScreenW * 0.5f, ScreenH * 0.30f, 1.4f, true);
+
+    const TCHAR* Options[2] = { TEXT("START"), TEXT("QUIT") };
+    for (int32 i = 0; i < 2; ++i)
+    {
+        const bool bSel = (i == MenuIndex);
+        const FLinearColor Col = bSel ? FLinearColor(1.f, 0.9f, 0.3f) : FLinearColor(0.7f, 0.7f, 0.75f);
+        const FString Text = bSel ? FString::Printf(TEXT("> %s <"), Options[i]) : FString(Options[i]);
+        DrawShadowText(Text, Col, ScreenW * 0.5f, ScreenH * (0.46f + i * 0.10f), 2.0f, true);
+    }
+
+    DrawShadowText(TEXT("UP / DOWN  select        ENTER  confirm"),
+        FLinearColor(0.7f, 0.7f, 0.75f), ScreenW * 0.5f, ScreenH * 0.85f, 1.0f, true);
+}
+
+void ALastBellHUD::DrawOpponentSelect(int32 SelectIndex)
+{
+    const float ScreenW = Canvas->SizeX;
+    const float ScreenH = Canvas->SizeY;
+
+    const TCHAR* Names[3] = {
+        TEXT("REX  'ROOKIE'  RAMONE"),
+        TEXT("SAL  'SLIP'  CORRALES"),
+        TEXT("BRUNO  'THE BOULDER'  MACK")
+    };
+    const TCHAR* Descs[3] = {
+        TEXT("Rookie  -  slow, predictable, forgiving"),
+        TEXT("Counter Boxer  -  dodges and counters"),
+        TEXT("Heavyweight  -  slow but devastating power")
+    };
+
+    DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.55f), 0.f, 0.f, ScreenW, ScreenH);
+    DrawShadowText(TEXT("SELECT  OPPONENT"), FLinearColor(1.f, 0.85f, 0.2f), ScreenW * 0.5f, ScreenH * 0.16f, 2.6f, true);
+
+    for (int32 i = 0; i < 3; ++i)
+    {
+        const bool bSel = (i == SelectIndex);
+        const float RowY = ScreenH * (0.36f + i * 0.14f);
+        if (bSel)
+        {
+            DrawRect(FLinearColor(0.9f, 0.7f, 0.1f, 0.18f), ScreenW * 0.18f, RowY - 6.f, ScreenW * 0.64f, ScreenH * 0.11f);
+        }
+        const FLinearColor NameCol = bSel ? FLinearColor(1.f, 0.92f, 0.35f) : FLinearColor(0.8f, 0.8f, 0.85f);
+        DrawShadowText(FString::Printf(TEXT("%s%s"), bSel ? TEXT("> ") : TEXT("   "), Names[i]),
+            NameCol, ScreenW * 0.5f, RowY, 1.6f, true);
+        DrawShadowText(Descs[i], FLinearColor(0.7f, 0.7f, 0.75f), ScreenW * 0.5f, RowY + ScreenH * 0.05f, 0.95f, true);
+    }
+
+    DrawShadowText(TEXT("UP / DOWN  select        ENTER  fight        ESC  back"),
+        FLinearColor(0.7f, 0.7f, 0.75f), ScreenW * 0.5f, ScreenH * 0.88f, 1.0f, true);
+}
+
+void ALastBellHUD::DrawResultBanner(bool bPlayerWon)
+{
+    const float ScreenW = Canvas->SizeX;
+    const float ScreenH = Canvas->SizeY;
+
+    DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.6f), 0.f, 0.f, ScreenW, ScreenH);
+    DrawShadowText(bPlayerWon ? TEXT("YOU WIN") : TEXT("YOU LOSE"),
+        bPlayerWon ? FLinearColor(1.f, 0.84f, 0.2f) : FLinearColor(0.9f, 0.2f, 0.2f),
+        ScreenW * 0.5f, ScreenH * 0.36f, 4.5f, true);
+    DrawShadowText(TEXT("R  rematch        ENTER / ESC  menu"), FLinearColor::White,
+        ScreenW * 0.5f, ScreenH * 0.54f, 1.3f, true);
 }
 
 void ALastBellHUD::ShowGameHUD()
