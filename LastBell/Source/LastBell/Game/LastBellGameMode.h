@@ -103,6 +103,7 @@ private:
     int32 PlayerRoundWins = 0;
     int32 AIRoundWins = 0;
     int32 KnockdownCount = 0;
+    bool bResolving = false;   // guards against double match-ending on a KO
 
     FTimerHandle RoundTimerHandle;
     FTimerHandle KnockdownTimerHandle;
@@ -111,4 +112,13 @@ private:
     void KnockdownCountTick();
     void FinalizeMatch();
     void SetMatchState(EMatchState NewState);
+
+    // Wired to each fighter's stat events so a knockout ends the match and a
+    // KO-meter knockdown starts the 10-count.
+    void ResolveKO(bool bPlayerWasKOd);
+
+    UFUNCTION() void OnPlayerKO();
+    UFUNCTION() void OnAIKO();
+    UFUNCTION() void OnPlayerKnockdown();
+    UFUNCTION() void OnAIKnockdown();
 };

@@ -52,10 +52,24 @@ void ALastBellGameMode::StartMatch(UFighterDataAsset* OpponentData)
         IBoxerInterface::Execute_SetOpponent(AIBoxerRef, PlayerBoxer);
     }
 
+    // Wire knockout / knockdown into the match flow. AddUnique so repeated
+    // StartMatch calls (rematch) never double-bind.
+    if (PlayerBoxer && PlayerBoxer->StatsComponent)
+    {
+        PlayerBoxer->StatsComponent->OnKO.AddUniqueDynamic(this, &ALastBellGameMode::OnPlayerKO);
+        PlayerBoxer->StatsComponent->OnKnockdown.AddUniqueDynamic(this, &ALastBellGameMode::OnPlayerKnockdown);
+    }
+    if (AIBoxerRef && AIBoxerRef->StatsComponent)
+    {
+        AIBoxerRef->StatsComponent->OnKO.AddUniqueDynamic(this, &ALastBellGameMode::OnAIKO);
+        AIBoxerRef->StatsComponent->OnKnockdown.AddUniqueDynamic(this, &ALastBellGameMode::OnAIKnockdown);
+    }
+
     CurrentRound = 0;
     PlayerRoundWins = 0;
     AIRoundWins = 0;
     bMatchPlayerWon = false;
+    bResolving = false;
     SetMatchState(EMatchState::WaitingToStart);
 
     GetWorldTimerManager().SetTimer(RoundTimerHandle, [this]()
@@ -128,18 +142,46 @@ void ALastBellGameMode::EndRound(bool bPlayerWon, bool bByKnockdown)
     }
 }
 
+void ALastBellGameMode::OnPlayerKO() { ResolveKO(true); }
+void ALastBellGameMode::OnAIKO()     { ResolveKO(false); }
+void ALastBellGameMode::OnPlayerKnockdown() { TriggerKnockdown(PlayerBoxer); }
+void ALastBellGameMode::OnAIKnockdown()     { TriggerKnockdown(AIBoxerRef); }
+
+void ALastBellGameMode::ResolveKO(bool bPlayerWasKOd)
+{
+    // A health-zero knockout ends the whole match immediately.
+    if (bResolving) return;
+    if (CurrentMatchState != EMatchState::RoundActive && CurrentMatchState != EMatchState::Knockdown) return;
+    bResolving = true;
+
+    GetWorldTimerManager().ClearTimer(RoundTimerHandle);
+    GetWorldTimerManager().ClearTimer(KnockdownTimerHandle);
+
+    if (PlayerBoxer) PlayerBoxer->SetBoxerEnabled(false);
+    if (AIBoxerRef)  AIBoxerRef->SetBoxerEnabled(false);
+
+    if (bPlayerWasKOd) AIRoundWins = TotalRounds;
+    else               PlayerRoundWins = TotalRounds;
+
+    SetMatchState(EMatchState::MatchOver);
+
+    GetWorldTimerManager().SetTimer(RoundTimerHandle, [this]()
+    {
+        FinalizeMatch();
+    }, 2.5f, false);
+}
+
 void ALastBellGameMode::TriggerKnockdown(ABoxerCharacter* KnockedDownFighter)
 {
     if (!KnockedDownFighter) return;
+    if (CurrentMatchState != EMatchState::RoundActive) return;
 
     SetMatchState(EMatchState::Knockdown);
     KnockdownCount = 0;
-    KnockedDownFighter->SetBoxerEnabled(false);
 
-    if (AIBoxerRef && Cast<AAIBoxer>(AIBoxerRef))
-    {
-        AIBoxerRef->SetBoxerEnabled(false);
-    }
+    // Freeze both fighters for the count.
+    if (PlayerBoxer) PlayerBoxer->SetBoxerEnabled(false);
+    if (AIBoxerRef)  AIBoxerRef->SetBoxerEnabled(false);
 
     UBoxerFeedbackComponent* Feedback = KnockedDownFighter->FeedbackComponent;
     if (Feedback)
@@ -191,6 +233,7 @@ void ALastBellGameMode::AbortMatch()
     if (PlayerBoxer) PlayerBoxer->SetBoxerEnabled(false);
     if (AIBoxerRef)  AIBoxerRef->SetBoxerEnabled(false);
     CurrentRound = 0;
+    bResolving = false;
     SetMatchState(EMatchState::WaitingToStart);
 }
 

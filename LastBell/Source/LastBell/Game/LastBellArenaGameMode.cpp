@@ -43,7 +43,7 @@ void ALastBellArenaGameMode::BeginPlay()
     PlayerRef = Cast<APlayerBoxer>(UGameplayStatics::GetPlayerPawn(this, 0));
     if (PlayerRef)
     {
-        PlayerRef->SetActorLocation(FVector(-160.f, 0.f, 130.f));
+        PlayerRef->SetActorLocation(FVector(-160.f, 0.f, 100.f));
         PlayerRef->SetActorRotation(FRotator::ZeroRotator);
         PlayerRef->LoadFighterData(UFighterFactory::MakePlayer(this));
         PlayerRef->SetBoxerEnabled(false);
@@ -127,9 +127,10 @@ void ALastBellArenaGameMode::EnterMainMenu()
     if (PlayerRef)
     {
         PlayerRef->ResetState();
-        PlayerRef->SetActorLocation(FVector(-160.f, 0.f, 130.f));
+        PlayerRef->SetActorLocation(FVector(-160.f, 0.f, 100.f));
         PlayerRef->SetActorRotation(FRotator::ZeroRotator);
         PlayerRef->SetBoxerEnabled(false);
+        PlayerRef->SetOpponent_Implementation(nullptr);
     }
 }
 
@@ -144,7 +145,7 @@ void ALastBellArenaGameMode::StartSelectedFight()
     const EFighterType Type = TypeForIndex(SelectIndex);
     CurrentOpponentData = UFighterFactory::MakeOpponent(this, Type);
 
-    const FVector AIPos(160.f, 0.f, 130.f);
+    const FVector AIPos(160.f, 0.f, 100.f);
     if (!AIBoxer)
     {
         AIBoxer = SpawnAIBoxer(AIPos);
@@ -165,7 +166,7 @@ void ALastBellArenaGameMode::StartSelectedFight()
     if (PlayerRef)
     {
         PlayerRef->ResetState();
-        PlayerRef->SetActorLocation(FVector(-160.f, 0.f, 130.f));
+        PlayerRef->SetActorLocation(FVector(-160.f, 0.f, 100.f));
         PlayerRef->SetActorRotation(FRotator::ZeroRotator);
     }
 
