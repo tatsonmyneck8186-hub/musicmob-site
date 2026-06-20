@@ -3,6 +3,18 @@
 All notable changes to the LAST BELL prototype. This is a code-only procedural
 build (no editor-authored .uasset, UMG, or Niagara required).
 
+## [Unreal 5.7] — Hardening pass 2: stuck-time safety + KO camera
+
+### Fixed
+- **Stuck slow-motion safety.** `AbortMatch` now defensively restores global time
+  dilation to 1, so bailing to the menu during a KO slow-motion can never leave
+  the game running in slow time.
+
+### Game feel
+- **KO camera push-in.** The arcade camera eases into a dramatic FOV push-in
+  whenever either fighter is knocked down / knocked out, then eases back out —
+  built on the existing camera + boxer-state systems (no new system).
+
 ## [Unreal 5.7] — Hardening pass: match-flow reliability + KO feel
 
 ### Fixed

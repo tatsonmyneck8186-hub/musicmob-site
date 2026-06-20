@@ -243,6 +243,8 @@ void ALastBellGameMode::AbortMatch()
     if (AIBoxerRef)  AIBoxerRef->SetBoxerEnabled(false);
     CurrentRound = 0;
     bResolving = false;
+    // Defensive: never leave a fight (e.g. bailing mid-KO-slowmo) with altered time.
+    UGameplayStatics::SetGlobalTimeDilation(this, 1.f);
     SetMatchState(EMatchState::WaitingToStart);
 }
 

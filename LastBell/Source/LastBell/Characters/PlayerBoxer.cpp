@@ -134,10 +134,29 @@ void APlayerBoxer::UpdateArcadeCamera(float DeltaTime)
     const float SwayPitch = FMath::Sin(SwayTime * 0.45f) * 0.8f;
     CameraBoom->SetWorldRotation(FRotator(-14.f + SwayPitch, 70.f + SwayYaw, 0.f));
 
-    // FOV: base + per-phase feedback offset + decaying impact pulse.
+    // Dramatic sustained push-in while either fighter is down / knocked out.
+    float KOTarget = 0.f;
+    if ((CurrentState == EBoxerState::KO || CurrentState == EBoxerState::KnockedDown))
+    {
+        KOTarget = -10.f;
+    }
+    else if (AActor* Opp = OpponentRef.Get())
+    {
+        if (Opp->GetClass()->ImplementsInterface(UBoxerInterface::StaticClass()))
+        {
+            const EBoxerState OppState = IBoxerInterface::Execute_GetBoxerState(Opp);
+            if (OppState == EBoxerState::KO || OppState == EBoxerState::KnockedDown)
+            {
+                KOTarget = -10.f;
+            }
+        }
+    }
+    KOZoom = FMath::FInterpTo(KOZoom, KOTarget, DeltaTime, 4.f);
+
+    // FOV: base + per-phase feedback offset + decaying impact pulse + KO push-in.
     ImpactZoom = FMath::FInterpTo(ImpactZoom, 0.f, DeltaTime, 6.f);
     const float FOVOffset = FeedbackComponent->GetFOVOffset();
-    FollowCamera->FieldOfView = BaseFOV + FOVOffset + ImpactZoom;
+    FollowCamera->FieldOfView = BaseFOV + FOVOffset + ImpactZoom + KOZoom;
 }
 
 void APlayerBoxer::PlayImpactShake(bool bHeavy)

@@ -75,6 +75,7 @@ private:
 
     float ImpactZoom = 0.f;   // transient FOV pulse on impact (decays to 0)
     float SwayTime = 0.f;
+    float KOZoom = 0.f;       // sustained dramatic push-in while a fighter is down
 
     /** Builds Enhanced Input assets in C++ when none are assigned, so the game is
      *  playable from code alone (A/D move, LMB/RMB/E punch, Space dodge, S duck). */
