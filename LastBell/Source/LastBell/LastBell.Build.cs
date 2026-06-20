@@ -19,7 +19,8 @@ public class LastBell : ModuleRules
             "GameplayTasks",
             "SlateCore",
             "Slate",
-            "PhysicsCore"
+            "PhysicsCore",
+            "GameplayCameras"
         });
 
         PrivateDependencyModuleNames.AddRange(new string[] { });

@@ -2,7 +2,7 @@
 #include "Components/BoxerStatsComponent.h"
 #include "Core/IBoxerInterface.h"
 #include "GameFramework/Character.h"
-#include "Engine/WorldSettings.h"
+#include "Kismet/GameplayStatics.h"
 #include "HAL/PlatformTime.h"
 
 UCombatComponent::UCombatComponent()
@@ -132,11 +132,7 @@ void UCombatComponent::TickHitPause()
     if (Now - HitPauseStartRealTime >= HitPauseRealDuration)
     {
         bInHitPause = false;
-        if (UWorld* World = GetWorld())
-        {
-            AWorldSettings* WS = World->GetWorldSettings();
-            if (WS) WS->SetTimeDilation(1.f);
-        }
+        UGameplayStatics::SetGlobalTimeDilation(this, 1.f);
     }
 }
 
@@ -186,11 +182,7 @@ void UCombatComponent::EndAttack()
 
 void UCombatComponent::StartHitPause(float RealDuration)
 {
-    if (UWorld* World = GetWorld())
-    {
-        AWorldSettings* WS = World->GetWorldSettings();
-        if (WS) WS->SetTimeDilation(0.05f);
-    }
+    UGameplayStatics::SetGlobalTimeDilation(this, 0.05f);
     bInHitPause = true;
     HitPauseStartRealTime = FPlatformTime::Seconds();
     HitPauseRealDuration = RealDuration;

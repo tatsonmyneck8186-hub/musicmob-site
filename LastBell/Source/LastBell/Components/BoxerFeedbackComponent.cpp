@@ -1,5 +1,5 @@
 #include "Components/BoxerFeedbackComponent.h"
-#include "Engine/WorldSettings.h"
+#include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "HAL/PlatformTime.h"
 
@@ -39,11 +39,7 @@ void UBoxerFeedbackComponent::TriggerKOSlowMotion(float TargetDilation, float Ra
 void UBoxerFeedbackComponent::CancelSlowMotion()
 {
     bInSlowMo = false;
-    if (UWorld* World = GetWorld())
-    {
-        AWorldSettings* WS = World->GetWorldSettings();
-        if (WS) WS->SetTimeDilation(1.f);
-    }
+    UGameplayStatics::SetGlobalTimeDilation(this, 1.f);
 }
 
 void UBoxerFeedbackComponent::TriggerRumble(float Intensity, float Duration)
@@ -100,9 +96,5 @@ void UBoxerFeedbackComponent::TickSlowMo()
         TargetDilation = 1.f;
     }
 
-    if (UWorld* World = GetWorld())
-    {
-        AWorldSettings* WS = World->GetWorldSettings();
-        if (WS) WS->SetTimeDilation(TargetDilation);
-    }
+    UGameplayStatics::SetGlobalTimeDilation(this, TargetDilation);
 }

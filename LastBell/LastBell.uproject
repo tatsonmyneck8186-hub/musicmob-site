@@ -22,6 +22,10 @@
     {
       "Name": "GameplayTasks",
       "Enabled": true
+    },
+    {
+      "Name": "GameplayCameras",
+      "Enabled": true
     }
   ]
 }
