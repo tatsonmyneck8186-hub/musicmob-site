@@ -164,7 +164,15 @@ void UCombatComponent::CheckHit()
         HitChar->LaunchCharacter(Direction * CurrentAttackData.KnockbackForce, true, true);
     }
 
-    StartHitPause(CurrentAttackData.HitPauseDuration);
+    // Skip hit-pause on a finishing blow: the target's KO / knockdown slow-motion
+    // owns the global time scale, so a hit-pause restore-to-1 would pop mid-slowmo.
+    const EBoxerState TargetState = IBoxerInterface::Execute_GetBoxerState(OpponentActor);
+    const bool bTargetDown = TargetState == EBoxerState::KO || TargetState == EBoxerState::KnockedDown
+        || IBoxerInterface::Execute_GetHealthPercent(OpponentActor) <= 0.f;
+    if (!bTargetDown)
+    {
+        StartHitPause(CurrentAttackData.HitPauseDuration);
+    }
 }
 
 void UCombatComponent::EndAttack()

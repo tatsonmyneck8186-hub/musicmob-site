@@ -123,6 +123,7 @@ void ALastBellArenaGameMode::EnterMainMenu()
         AIBoxer->ResetState();
         AIBoxer->SetActorHiddenInGame(true);
         AIBoxer->SetActorEnableCollision(false);
+        AIBoxer->SetActorTickEnabled(false); // parked in the menu: stop animating invisibly
     }
     if (PlayerRef)
     {
@@ -154,6 +155,7 @@ void ALastBellArenaGameMode::StartSelectedFight()
     {
         AIBoxer->SetActorHiddenInGame(false);
         AIBoxer->SetActorEnableCollision(true);
+        AIBoxer->SetActorTickEnabled(true);
         AIBoxer->ResetState();
         AIBoxer->SetActorLocation(AIPos);
         AIBoxer->SetActorRotation(FRotator(0.f, 180.f, 0.f));

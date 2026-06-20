@@ -72,7 +72,7 @@ void ALastBellGameMode::StartMatch(UFighterDataAsset* OpponentData)
     bResolving = false;
     SetMatchState(EMatchState::WaitingToStart);
 
-    GetWorldTimerManager().SetTimer(RoundTimerHandle, [this]()
+    GetWorldTimerManager().SetTimer(SequenceTimerHandle, [this]()
     {
         StartRound();
     }, 3.f, false);
@@ -113,7 +113,11 @@ void ALastBellGameMode::TickRoundTimer()
 
 void ALastBellGameMode::EndRound(bool bPlayerWon, bool bByKnockdown)
 {
+    // Guard against a stray/second end (e.g. a buffered timer after a KO already resolved).
+    if (CurrentMatchState != EMatchState::RoundActive && CurrentMatchState != EMatchState::Knockdown) return;
+
     GetWorldTimerManager().ClearTimer(RoundTimerHandle);
+    GetWorldTimerManager().ClearTimer(KnockdownTimerHandle);
     SetMatchState(EMatchState::BetweenRounds);
 
     if (PlayerBoxer) PlayerBoxer->SetBoxerEnabled(false);
@@ -128,14 +132,14 @@ void ALastBellGameMode::EndRound(bool bPlayerWon, bool bByKnockdown)
 
     if (CurrentRound >= TotalRounds || bMatchDecided)
     {
-        GetWorldTimerManager().SetTimer(RoundTimerHandle, [this]()
+        GetWorldTimerManager().SetTimer(SequenceTimerHandle, [this]()
         {
             FinalizeMatch();
         }, 3.f, false);
     }
     else
     {
-        GetWorldTimerManager().SetTimer(RoundTimerHandle, [this]()
+        GetWorldTimerManager().SetTimer(SequenceTimerHandle, [this]()
         {
             StartRound();
         }, 5.f, false);
@@ -156,6 +160,7 @@ void ALastBellGameMode::ResolveKO(bool bPlayerWasKOd)
 
     GetWorldTimerManager().ClearTimer(RoundTimerHandle);
     GetWorldTimerManager().ClearTimer(KnockdownTimerHandle);
+    GetWorldTimerManager().ClearTimer(SequenceTimerHandle);
 
     if (PlayerBoxer) PlayerBoxer->SetBoxerEnabled(false);
     if (AIBoxerRef)  AIBoxerRef->SetBoxerEnabled(false);
@@ -165,7 +170,7 @@ void ALastBellGameMode::ResolveKO(bool bPlayerWasKOd)
 
     SetMatchState(EMatchState::MatchOver);
 
-    GetWorldTimerManager().SetTimer(RoundTimerHandle, [this]()
+    GetWorldTimerManager().SetTimer(SequenceTimerHandle, [this]()
     {
         FinalizeMatch();
     }, 2.5f, false);
@@ -175,6 +180,9 @@ void ALastBellGameMode::TriggerKnockdown(ABoxerCharacter* KnockedDownFighter)
 {
     if (!KnockedDownFighter) return;
     if (CurrentMatchState != EMatchState::RoundActive) return;
+
+    // Stop the round clock so it can't expire (and race EndRound) during the count.
+    GetWorldTimerManager().ClearTimer(RoundTimerHandle);
 
     SetMatchState(EMatchState::Knockdown);
     KnockdownCount = 0;
@@ -220,7 +228,7 @@ void ALastBellGameMode::HandleMatchEnd(bool bPlayerWon)
     // Default (authored-map) path: transition to the win/lose level after a beat.
     // The arena (code-only) game mode overrides this to stay in-world.
     FString MapName = bPlayerWon ? TEXT("/Game/LastBell/Maps/L_WinScreen") : TEXT("/Game/LastBell/Maps/L_LoseScreen");
-    GetWorldTimerManager().SetTimer(RoundTimerHandle, [this, MapName]()
+    GetWorldTimerManager().SetTimer(SequenceTimerHandle, [this, MapName]()
     {
         UGameplayStatics::OpenLevel(this, FName(*MapName));
     }, 3.f, false);
@@ -229,6 +237,7 @@ void ALastBellGameMode::HandleMatchEnd(bool bPlayerWon)
 void ALastBellGameMode::AbortMatch()
 {
     GetWorldTimerManager().ClearTimer(RoundTimerHandle);
+    GetWorldTimerManager().ClearTimer(SequenceTimerHandle);
     GetWorldTimerManager().ClearTimer(KnockdownTimerHandle);
     if (PlayerBoxer) PlayerBoxer->SetBoxerEnabled(false);
     if (AIBoxerRef)  AIBoxerRef->SetBoxerEnabled(false);

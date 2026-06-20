@@ -105,8 +105,9 @@ private:
     int32 KnockdownCount = 0;
     bool bResolving = false;   // guards against double match-ending on a KO
 
-    FTimerHandle RoundTimerHandle;
-    FTimerHandle KnockdownTimerHandle;
+    FTimerHandle RoundTimerHandle;       // repeating 1s round clock only
+    FTimerHandle SequenceTimerHandle;    // one-shot transitions (intro / between-round / finalize)
+    FTimerHandle KnockdownTimerHandle;   // knockdown 10-count
 
     void TickRoundTimer();
     void KnockdownCountTick();
