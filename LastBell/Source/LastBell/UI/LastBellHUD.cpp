@@ -115,11 +115,41 @@ void ALastBellHUD::DrawFightHUD(ALastBellGameMode* GM)
         LastOppHealth = HP;
     }
 
-    const int32 TimeLeft = FMath::Max(0, FMath::CeilToInt(GM->GetRoundTimeRemaining()));
-    DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.55f), ScreenW * 0.5f - 52.f, TopY - 8.f, 104.f, 64.f);
-    DrawShadowText(FString::Printf(TEXT("%02d"), TimeLeft), FLinearColor::White, ScreenW * 0.5f, TopY - 4.f, 2.4f, true);
-    DrawShadowText(FString::Printf(TEXT("ROUND %d / %d"), FMath::Max(1, GM->GetCurrentRound()), GM->GetTotalRounds()),
-        FLinearColor(0.9f, 0.9f, 0.9f), ScreenW * 0.5f, TopY + 56.f, 0.9f, true);
+    // Detect the bell (transition into an active round) to flash "FIGHT!".
+    const EMatchState MS = GM->GetMatchState();
+    if (MS == EMatchState::RoundActive && LastMatchState != EMatchState::RoundActive)
+    {
+        FightFlashTimer = 1.2f;
+    }
+    LastMatchState = MS;
+
+    const float CenterX = ScreenW * 0.5f;
+    if (MS == EMatchState::WaitingToStart || MS == EMatchState::BetweenRounds)
+    {
+        // Pre-round intro: show the upcoming round instead of a dead "00" clock.
+        const int32 Cur = GM->GetCurrentRound();
+        const int32 Upcoming = (MS == EMatchState::WaitingToStart)
+            ? FMath::Max(1, Cur) : FMath::Min(GM->GetTotalRounds(), Cur + 1);
+        DrawShadowText(FString::Printf(TEXT("ROUND %d"), Upcoming), FLinearColor(1.f, 0.85f, 0.2f),
+            CenterX, TopY + 2.f, 2.2f, true);
+        DrawShadowText(TEXT("GET READY"), FLinearColor::White, CenterX, TopY + 56.f, 1.0f, true);
+    }
+    else
+    {
+        const int32 TimeLeft = FMath::Max(0, FMath::CeilToInt(GM->GetRoundTimeRemaining()));
+        DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.55f), CenterX - 52.f, TopY - 8.f, 104.f, 64.f);
+        DrawShadowText(FString::Printf(TEXT("%02d"), TimeLeft), FLinearColor::White, CenterX, TopY - 4.f, 2.4f, true);
+        DrawShadowText(FString::Printf(TEXT("ROUND %d / %d"), FMath::Max(1, GM->GetCurrentRound()), GM->GetTotalRounds()),
+            FLinearColor(0.9f, 0.9f, 0.9f), CenterX, TopY + 56.f, 0.9f, true);
+    }
+
+    if (FightFlashTimer > 0.f)
+    {
+        const float A = FMath::Clamp(FightFlashTimer / 1.2f, 0.f, 1.f);
+        DrawShadowText(TEXT("FIGHT!"), FLinearColor(1.f, 0.3f + 0.6f * A, 0.1f),
+            CenterX, ScreenH * 0.40f, 3.0f + (1.f - A) * 1.5f, true);
+        FightFlashTimer -= DT;
+    }
 
     if (ABoxerCharacter* PChar = Cast<ABoxerCharacter>(Player))
     {

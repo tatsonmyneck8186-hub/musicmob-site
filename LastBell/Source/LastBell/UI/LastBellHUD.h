@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
+#include "Core/BoxingTypes.h"
 #include "LastBellHUD.generated.h"
 
 class UUserWidget;
@@ -73,6 +74,8 @@ private:
     int32 LastComboShown = 0;
     float LastPlayerHealth = 1.f;
     float LastOppHealth = 1.f;
+    float FightFlashTimer = 0.f;    // "FIGHT!" banner at the bell
+    EMatchState LastMatchState = EMatchState::WaitingToStart;
 
     void DrawPanelBar(float X, float Y, float W, float H, float Fraction,
         const FLinearColor& Fill, bool bRightToLeft, const FString& Label);

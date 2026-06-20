@@ -3,6 +3,13 @@
 All notable changes to the LAST BELL prototype. This is a code-only procedural
 build (no editor-authored .uasset, UMG, or Niagara required).
 
+## [Unreal 5.7] — Presentation: round intro + FIGHT! banner
+
+### Added (presentation polish, no new systems)
+- The pre-round and between-round wait now shows a centered "ROUND n / GET READY"
+  intro instead of a dead "00" clock, and a "FIGHT!" banner flashes at the bell
+  when each round goes active. Built on existing match-state + HUD canvas.
+
 ## [Unreal 5.7] — Hardening pass 2: stuck-time safety + KO camera
 
 ### Fixed
