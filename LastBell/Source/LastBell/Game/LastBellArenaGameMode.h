@@ -6,6 +6,7 @@
 #include "LastBellArenaGameMode.generated.h"
 
 class AAIBoxer;
+class UFighterDataAsset;
 
 /**
  * A self-contained boot game mode. Drop this into any empty level (it is already
@@ -30,9 +31,15 @@ public:
 
 protected:
     virtual void BeginPlay() override;
+    virtual void Tick(float DeltaTime) override;
+    virtual void HandleMatchEnd(bool bPlayerWon) override;
 
 private:
+    UPROPERTY()
+    TObjectPtr<UFighterDataAsset> CurrentOpponentData;
+
     void SpawnEnvironment();
     void SpawnLighting();
     AAIBoxer* SpawnAIBoxer(const FVector& Location);
+    void RestartArena();
 };

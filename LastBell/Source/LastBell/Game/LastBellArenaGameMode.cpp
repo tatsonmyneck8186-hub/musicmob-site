@@ -9,8 +9,10 @@
 #include "Environment/BoxingRingActor.h"
 #include "Environment/CrowdActor.h"
 #include "UI/LastBellHUD.h"
+#include "Characters/BoxerCharacter.h"
 #include "Engine/DirectionalLight.h"
 #include "Components/LightComponent.h"
+#include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 
 ALastBellArenaGameMode::ALastBellArenaGameMode()
@@ -18,6 +20,7 @@ ALastBellArenaGameMode::ALastBellArenaGameMode()
     DefaultPawnClass = APlayerBoxer::StaticClass();
     PlayerControllerClass = ALastBellPlayerController::StaticClass();
     HUDClass = ALastBellHUD::StaticClass();
+    PrimaryActorTick.bCanEverTick = true;
 }
 
 void ALastBellArenaGameMode::BeginPlay()
@@ -41,19 +44,62 @@ void ALastBellArenaGameMode::BeginPlay()
 
     // Build and place the opponent.
     AAIBoxer* AI = SpawnAIBoxer(FVector(160.f, 0.f, 130.f));
-    UFighterDataAsset* OpponentData = UFighterFactory::MakeOpponent(this, OpponentType);
-    if (AI && OpponentData)
+    CurrentOpponentData = UFighterFactory::MakeOpponent(this, OpponentType);
+    if (AI && CurrentOpponentData)
     {
-        AI->LoadFighterData(OpponentData);
+        AI->LoadFighterData(CurrentOpponentData);
         if (AI->PersonalityComponent)
         {
-            AI->PersonalityComponent->Initialize(OpponentData->Personality);
+            AI->PersonalityComponent->Initialize(CurrentOpponentData->Personality);
         }
     }
 
     // StartMatch discovers both boxers, links them as opponents, and kicks off
     // the round flow (after its built-in intro delay).
-    StartMatch(OpponentData);
+    StartMatch(CurrentOpponentData);
+}
+
+void ALastBellArenaGameMode::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    // After a match, wait for the rematch key (R) since there is no menu level.
+    if (GetMatchState() == EMatchState::MatchOver)
+    {
+        if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+        {
+            if (PC->WasInputKeyJustPressed(EKeys::R))
+            {
+                RestartArena();
+            }
+        }
+    }
+}
+
+void ALastBellArenaGameMode::HandleMatchEnd(bool bPlayerWon)
+{
+    // Stay in-world (no win/lose level in the code-only boot): strike victory and
+    // defeat poses. The HUD draws the result banner + rematch prompt.
+    if (PlayerBoxer) PlayerBoxer->SetEndPose(bPlayerWon);
+    if (AIBoxerRef)  AIBoxerRef->SetEndPose(!bPlayerWon);
+
+    if (PlayerBoxer) PlayerBoxer->SetBoxerEnabled(false);
+    if (AIBoxerRef)  AIBoxerRef->SetBoxerEnabled(false);
+}
+
+void ALastBellArenaGameMode::RestartArena()
+{
+    if (PlayerBoxer)
+    {
+        PlayerBoxer->ResetState();
+        PlayerBoxer->SetActorLocation(FVector(-160.f, 0.f, 130.f));
+    }
+    if (AIBoxerRef)
+    {
+        AIBoxerRef->ResetState();
+        AIBoxerRef->SetActorLocation(FVector(160.f, 0.f, 130.f));
+    }
+    StartMatch(CurrentOpponentData);
 }
 
 void ALastBellArenaGameMode::SpawnEnvironment()

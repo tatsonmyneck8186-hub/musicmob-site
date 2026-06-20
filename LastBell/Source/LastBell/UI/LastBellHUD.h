@@ -54,8 +54,7 @@ public:
     UFUNCTION(BlueprintImplementableEvent, Category = "HUD")
     void UpdateCombo(int32 ComboCount);
 
-    /** Draws health/stamina/timer/round/combo with the canvas when no UMG HUD
-     *  widget is assigned — lets a code-only boot show a real fight UI. */
+    /** Draws a bold arcade HUD with the canvas when no UMG HUD widget is assigned. */
     UPROPERTY(EditDefaultsOnly, Category = "HUD")
     bool bUseDebugHUD = true;
 
@@ -68,6 +67,15 @@ private:
     TObjectPtr<UUserWidget> ActiveHUDWidget;
     TObjectPtr<UUserWidget> KnockdownWidget;
 
-    void DrawBar(float X, float Y, float Width, float Height, float Fraction,
-        const FLinearColor& FillColor, bool bRightToLeft);
+    // Canvas HUD transient state.
+    float KOFlashTimer = 0.f;       // white impact flash countdown
+    float ComboPulse = 0.f;         // combo emphasis pulse
+    int32 LastComboShown = 0;
+    float LastPlayerHealth = 1.f;
+    float LastOppHealth = 1.f;
+
+    void DrawPanelBar(float X, float Y, float W, float H, float Fraction,
+        const FLinearColor& Fill, bool bRightToLeft, const FString& Label);
+    void DrawShadowText(const FString& Text, const FLinearColor& Color,
+        float X, float Y, float Scale, bool bCenter);
 };

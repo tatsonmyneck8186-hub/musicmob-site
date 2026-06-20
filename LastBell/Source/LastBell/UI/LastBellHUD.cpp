@@ -14,15 +14,33 @@ void ALastBellHUD::BeginPlay()
     Super::BeginPlay();
 }
 
-void ALastBellHUD::DrawBar(float X, float Y, float Width, float Height, float Fraction,
-    const FLinearColor& FillColor, bool bRightToLeft)
+void ALastBellHUD::DrawShadowText(const FString& Text, const FLinearColor& Color,
+    float X, float Y, float Scale, bool bCenter)
+{
+    float TW = 0.f, TH = 0.f;
+    GetTextSize(Text, TW, TH, nullptr, Scale);
+    const float DrawX = bCenter ? X - TW * 0.5f : X;
+    DrawText(Text, FLinearColor(0.f, 0.f, 0.f, 0.85f), DrawX + 2.f, Y + 2.f, nullptr, Scale);
+    DrawText(Text, Color, DrawX, Y, nullptr, Scale);
+}
+
+void ALastBellHUD::DrawPanelBar(float X, float Y, float W, float H, float Fraction,
+    const FLinearColor& Fill, bool bRightToLeft, const FString& Label)
 {
     Fraction = FMath::Clamp(Fraction, 0.f, 1.f);
-    // Backing plate.
-    DrawRect(FLinearColor(0.02f, 0.02f, 0.02f, 0.75f), X - 2.f, Y - 2.f, Width + 4.f, Height + 4.f);
-    const float FillW = Width * Fraction;
-    const float FillX = bRightToLeft ? (X + Width - FillW) : X;
-    DrawRect(FillColor, FillX, Y, FillW, Height);
+    // Bevel/frame.
+    DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.85f), X - 3.f, Y - 3.f, W + 6.f, H + 6.f);
+    DrawRect(FLinearColor(0.10f, 0.10f, 0.12f, 1.f), X, Y, W, H);
+    // Fill.
+    const float FillW = W * Fraction;
+    const float FillX = bRightToLeft ? (X + W - FillW) : X;
+    DrawRect(Fill, FillX, Y, FillW, H);
+    // Gloss line.
+    DrawRect(FLinearColor(1.f, 1.f, 1.f, 0.18f), FillX, Y, FillW, H * 0.35f);
+    if (!Label.IsEmpty())
+    {
+        DrawShadowText(Label, FLinearColor::White, bRightToLeft ? X + W : X, Y - 22.f, 1.0f, false);
+    }
 }
 
 void ALastBellHUD::DrawHUD()
@@ -40,61 +58,105 @@ void ALastBellHUD::DrawHUD()
         return;
     }
 
+    const float DT = GetWorld() ? GetWorld()->GetDeltaSeconds() : 0.016f;
     const float ScreenW = Canvas->SizeX;
-    const float Margin = 40.f;
-    const float BarW = ScreenW * 0.34f;
-    const float BarH = 22.f;
+    const float ScreenH = Canvas->SizeY;
+    const float Margin = ScreenW * 0.035f;
+    const float BarW = ScreenW * 0.36f;
+    const float BarH = 26.f;
+    const float TopY = 54.f;
 
     AActor* Player = Cast<AActor>(GM->PlayerBoxer);
     AActor* Opponent = Cast<AActor>(GM->AIBoxerRef);
 
+    const FLinearColor HealthCol(0.88f, 0.16f, 0.16f);
+    const FLinearColor StamCol(0.95f, 0.78f, 0.12f);
+
+    // ---- Player (left) ----
     if (Player && Player->GetClass()->ImplementsInterface(UBoxerInterface::StaticClass()))
     {
         const float HP = IBoxerInterface::Execute_GetHealthPercent(Player);
         const float ST = IBoxerInterface::Execute_GetStaminaPercent(Player);
-        DrawBar(Margin, 36.f, BarW, BarH, HP, FLinearColor(0.85f, 0.15f, 0.15f), false);
-        DrawBar(Margin, 36.f + BarH + 6.f, BarW, 10.f, ST, FLinearColor(0.95f, 0.8f, 0.1f), false);
-        DrawText(TEXT("YOU"), FLinearColor::White, Margin, 14.f, nullptr, 1.1f);
+        DrawPanelBar(Margin, TopY, BarW, BarH, HP, HealthCol, false, TEXT("YOU"));
+        DrawPanelBar(Margin, TopY + BarH + 8.f, BarW, 12.f, ST, StamCol, false, FString());
+
+        if (HP <= 0.f && LastPlayerHealth > 0.f) KOFlashTimer = 0.45f;
+        LastPlayerHealth = HP;
     }
 
+    // ---- Opponent (right) ----
     if (Opponent && Opponent->GetClass()->ImplementsInterface(UBoxerInterface::StaticClass()))
     {
         const float HP = IBoxerInterface::Execute_GetHealthPercent(Opponent);
         const float ST = IBoxerInterface::Execute_GetStaminaPercent(Opponent);
         const float RX = ScreenW - Margin - BarW;
-        DrawBar(RX, 36.f, BarW, BarH, HP, FLinearColor(0.85f, 0.15f, 0.15f), true);
-        DrawBar(RX, 36.f + BarH + 6.f, BarW, 10.f, ST, FLinearColor(0.95f, 0.8f, 0.1f), true);
 
         FString OppName = TEXT("OPPONENT");
         if (ABoxerCharacter* OppChar = Cast<ABoxerCharacter>(Opponent))
         {
-            if (OppChar->GetFighterData())
-            {
-                OppName = OppChar->GetFighterData()->FighterName.ToString();
-            }
+            if (OppChar->GetFighterData()) OppName = OppChar->GetFighterData()->FighterName.ToString().ToUpper();
         }
-        DrawText(OppName, FLinearColor::White, RX, 14.f, nullptr, 1.1f);
+        DrawPanelBar(RX, TopY, BarW, BarH, HP, HealthCol, true, FString());
+        DrawShadowText(OppName, FLinearColor::White, RX + BarW, TopY - 22.f, 1.0f, false);
+        DrawPanelBar(RX, TopY + BarH + 8.f, BarW, 12.f, ST, StamCol, true, FString());
+
+        if (HP <= 0.f && LastOppHealth > 0.f) KOFlashTimer = 0.45f;
+        LastOppHealth = HP;
     }
 
-    // Round timer + round number, centered.
+    // ---- Center: round timer + round number ----
     const int32 TimeLeft = FMath::Max(0, FMath::CeilToInt(GM->GetRoundTimeRemaining()));
-    const FString TimerStr = FString::Printf(TEXT("%02d"), TimeLeft);
-    DrawText(TimerStr, FLinearColor::White, ScreenW * 0.5f - 18.f, 24.f, nullptr, 2.0f);
-    DrawText(FString::Printf(TEXT("ROUND %d"), FMath::Max(1, GM->GetCurrentRound())),
-        FLinearColor(0.9f, 0.9f, 0.9f), ScreenW * 0.5f - 36.f, 70.f, nullptr, 1.0f);
+    DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.55f), ScreenW * 0.5f - 52.f, TopY - 8.f, 104.f, 64.f);
+    DrawShadowText(FString::Printf(TEXT("%02d"), TimeLeft), FLinearColor::White, ScreenW * 0.5f, TopY - 4.f, 2.4f, true);
+    DrawShadowText(FString::Printf(TEXT("ROUND %d / %d"), FMath::Max(1, GM->GetCurrentRound()), GM->GetTotalRounds()),
+        FLinearColor(0.9f, 0.9f, 0.9f), ScreenW * 0.5f, TopY + 56.f, 0.9f, true);
 
-    // Player combo counter.
+    // ---- Combo meter ----
     if (ABoxerCharacter* PChar = Cast<ABoxerCharacter>(Player))
     {
         if (PChar->ComboComponent)
         {
             const int32 Combo = PChar->ComboComponent->GetCurrentCombo();
+            if (Combo > LastComboShown && Combo >= 2) ComboPulse = 1.f;
+            LastComboShown = Combo;
             if (Combo >= 2)
             {
-                DrawText(FString::Printf(TEXT("%d HIT COMBO"), Combo),
-                    FLinearColor(1.f, 0.6f, 0.1f), Margin, 90.f, nullptr, 1.4f);
+                const float Scale = 1.5f + ComboPulse * 0.6f;
+                DrawShadowText(FString::Printf(TEXT("%d  HIT  COMBO"), Combo),
+                    FLinearColor(1.f, 0.55f + ComboPulse * 0.3f, 0.1f), Margin, TopY + 86.f, Scale, false);
             }
         }
+    }
+    ComboPulse = FMath::FInterpTo(ComboPulse, 0.f, DT, 5.f);
+
+    // ---- Knockdown count (big center) ----
+    if (GM->GetMatchState() == EMatchState::Knockdown)
+    {
+        const int32 Count = GM->GetKnockdownCount();
+        DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.5f), 0.f, ScreenH * 0.32f, ScreenW, ScreenH * 0.36f);
+        DrawShadowText(FString::Printf(TEXT("%d"), Count), FLinearColor(1.f, 0.85f, 0.2f),
+            ScreenW * 0.5f, ScreenH * 0.36f, 6.0f, true);
+        DrawShadowText(TEXT("DOWN!"), FLinearColor(1.f, 0.3f, 0.2f), ScreenW * 0.5f, ScreenH * 0.30f, 1.6f, true);
+    }
+
+    // ---- Match result banner ----
+    if (GM->GetMatchState() == EMatchState::MatchOver)
+    {
+        const bool bWon = GM->IsPlayerWinner();
+        DrawRect(FLinearColor(0.f, 0.f, 0.f, 0.6f), 0.f, 0.f, ScreenW, ScreenH);
+        DrawShadowText(bWon ? TEXT("YOU WIN") : TEXT("YOU LOSE"),
+            bWon ? FLinearColor(1.f, 0.84f, 0.2f) : FLinearColor(0.9f, 0.2f, 0.2f),
+            ScreenW * 0.5f, ScreenH * 0.38f, 4.5f, true);
+        DrawShadowText(TEXT("PRESS  R  TO  REMATCH"), FLinearColor::White,
+            ScreenW * 0.5f, ScreenH * 0.54f, 1.3f, true);
+    }
+
+    // ---- KO / impact full-screen flash ----
+    if (KOFlashTimer > 0.f)
+    {
+        const float Alpha = FMath::Clamp(KOFlashTimer / 0.45f, 0.f, 1.f);
+        DrawRect(FLinearColor(1.f, 1.f, 1.f, Alpha * 0.8f), 0.f, 0.f, ScreenW, ScreenH);
+        KOFlashTimer -= DT;
     }
 }
 

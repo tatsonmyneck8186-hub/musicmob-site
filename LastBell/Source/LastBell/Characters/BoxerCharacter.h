@@ -12,6 +12,7 @@ class UComboComponent;
 class UBoxerAudioComponent;
 class UFighterDataAsset;
 class UStaticMeshComponent;
+class USceneComponent;
 class UMaterialInstanceDynamic;
 
 UCLASS(Abstract)
@@ -37,9 +38,36 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<UBoxerAudioComponent> AudioComponent;
 
-    /** Simple placeholder body so a code-only boot is visible without a skeletal mesh. */
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-    TObjectPtr<UStaticMeshComponent> BodyMesh;
+    // ---- Procedural humanoid rig (placeholder fighter built from basic shapes) ----
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Body")
+    TObjectPtr<USceneComponent> BodyRoot;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Body")
+    TObjectPtr<UStaticMeshComponent> Pelvis;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Body")
+    TObjectPtr<UStaticMeshComponent> Torso;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Body")
+    TObjectPtr<UStaticMeshComponent> Head;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Body")
+    TObjectPtr<UStaticMeshComponent> LeftShoulder;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Body")
+    TObjectPtr<UStaticMeshComponent> RightShoulder;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Body")
+    TObjectPtr<UStaticMeshComponent> LeftGlove;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Body")
+    TObjectPtr<UStaticMeshComponent> RightGlove;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Body")
+    TObjectPtr<UStaticMeshComponent> LeftLeg;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Body")
+    TObjectPtr<UStaticMeshComponent> RightLeg;
 
     UFUNCTION(BlueprintCallable, Category = "Boxer")
     void LoadFighterData(UFighterDataAsset* Data);
@@ -52,6 +80,14 @@ public:
 
     UFUNCTION(BlueprintPure, Category = "Boxer")
     EBoxerState GetCurrentState() const { return CurrentState; }
+
+    /** Set the visual victory/defeat pose when a match ends. */
+    UFUNCTION(BlueprintCallable, Category = "Boxer")
+    void SetEndPose(bool bWon);
+
+    /** Clear transient combat/animation state back to a neutral guard. */
+    UFUNCTION(BlueprintCallable, Category = "Boxer")
+    void ResetState();
 
     // IBoxerInterface
     virtual void ExecuteAttack_Implementation(EBoxingMove Move) override;
@@ -98,6 +134,9 @@ protected:
     UFUNCTION()
     void OnMissRegistered(EBoxingMove Move);
 
+    UFUNCTION()
+    void OnAttackPhaseChanged(EAttackPhase NewPhase);
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ring")
     float RingBoundsY = 400.f;
 
@@ -105,6 +144,20 @@ private:
     FTimerHandle HitStunHandle;
     FTimerHandle DodgeHandle;
 
-    UPROPERTY()
-    TObjectPtr<UMaterialInstanceDynamic> BodyMaterial;
+    // ---- Procedural body construction + animation ----
+    void BuildBody();
+    void TintBody();
+    void UpdateProceduralAnim(float DeltaTime);
+    UStaticMeshComponent* MakePart(const FName& Name, USceneComponent* Parent);
+
+    UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> SkinMat;
+    UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> TrunkMat;
+    UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> BodyMat;
+    UPROPERTY() TObjectPtr<UMaterialInstanceDynamic> GloveMat;
+
+    float AnimTime = 0.f;
+    float DodgeDir = 1.f;          // +1 right, -1 left
+    bool bEndPoseWon = false;
+    bool bInEndPose = false;
+    EBoxingMove LastMove = EBoxingMove::None;
 };

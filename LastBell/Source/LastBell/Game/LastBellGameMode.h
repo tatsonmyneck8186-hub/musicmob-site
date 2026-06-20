@@ -69,6 +69,15 @@ public:
     UFUNCTION(BlueprintPure, Category = "Match")
     float GetRoundTimeRemaining() const { return RoundTimeRemaining; }
 
+    UFUNCTION(BlueprintPure, Category = "Match")
+    int32 GetKnockdownCount() const { return KnockdownCount; }
+
+    UFUNCTION(BlueprintPure, Category = "Match")
+    int32 GetTotalRounds() const { return TotalRounds; }
+
+    UFUNCTION(BlueprintPure, Category = "Match")
+    bool IsPlayerWinner() const { return bMatchPlayerWon; }
+
     UPROPERTY(BlueprintReadOnly, Category = "Match")
     TObjectPtr<ABoxerCharacter> PlayerBoxer;
 
@@ -77,6 +86,12 @@ public:
 
 protected:
     virtual void BeginPlay() override;
+
+    /** Presentation hook for a finished match. Base opens the win/lose level; the
+     *  arena game mode overrides this to stay in-world (poses + rematch). */
+    virtual void HandleMatchEnd(bool bPlayerWon);
+
+    bool bMatchPlayerWon = false;
 
 private:
     EMatchState CurrentMatchState = EMatchState::WaitingToStart;

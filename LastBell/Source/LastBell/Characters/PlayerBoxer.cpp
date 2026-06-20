@@ -1,27 +1,40 @@
 #include "Characters/PlayerBoxer.h"
 #include "Camera/CameraComponent.h"
+#include "Camera/BoxingCameraShake.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/PlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "InputAction.h"
 #include "InputModifiers.h"
 #include "Components/BoxerFeedbackComponent.h"
+#include "Components/CombatComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 APlayerBoxer::APlayerBoxer()
 {
     CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
     CameraBoom->SetupAttachment(RootComponent);
-    CameraBoom->TargetArmLength = 520.f;
-    CameraBoom->SetRelativeRotation(FRotator(-12.f, 0.f, 0.f));
+    CameraBoom->SetRelativeLocation(FVector(0.f, 0.f, 60.f));   // aim at chest height
+    CameraBoom->TargetArmLength = 620.f;
     CameraBoom->bDoCollisionTest = false;
     CameraBoom->bUsePawnControlRotation = false;
+    CameraBoom->bInheritPitch = false;
+    CameraBoom->bInheritYaw = false;
+    CameraBoom->bInheritRoll = false;
+    // Keep a consistent side-on arcade view regardless of which way the boxer faces.
+    CameraBoom->SetUsingAbsoluteRotation(true);
+    CameraBoom->SetWorldRotation(FRotator(-14.f, 70.f, 0.f));
 
     FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
     FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-    FollowCamera->FieldOfView = 75.f;
+    FollowCamera->FieldOfView = 78.f;
     FollowCamera->bUsePawnControlRotation = false;
+
+    ShakeLight = UBoxingCameraShake_Light::StaticClass();
+    ShakeHeavy = UBoxingCameraShake_Heavy::StaticClass();
+    ShakeKO = UBoxingCameraShake_KO::StaticClass();
 }
 
 void APlayerBoxer::BeginPlay()
@@ -29,6 +42,11 @@ void APlayerBoxer::BeginPlay()
     Super::BeginPlay();
 
     EnsureRuntimeInput();
+
+    if (CombatComponent)
+    {
+        CombatComponent->OnHitLanded.AddDynamic(this, &APlayerBoxer::OnPlayerLandedHit);
+    }
 
     if (APlayerController* PC = Cast<APlayerController>(GetController()))
     {
@@ -45,7 +63,6 @@ void APlayerBoxer::BeginPlay()
 
 void APlayerBoxer::EnsureRuntimeInput()
 {
-    // If a designer already wired up Input Action assets in Blueprint, respect them.
     if (IA_Jab)
     {
         return;
@@ -85,9 +102,9 @@ void APlayerBoxer::Tick(float DeltaTime)
 
     AddMovementInput(GetActorRightVector(), HorizontalInput);
 
-    float FOVOffset = FeedbackComponent->GetFOVOffset();
-    FollowCamera->FieldOfView = BaseFOV + FOVOffset;
+    UpdateArcadeCamera(DeltaTime);
 
+    // Drive the per-phase FOV punch through the feedback component.
     EAttackPhase Phase = CombatComponent->GetCurrentAttackPhase();
     if (Phase == EAttackPhase::Startup)
     {
@@ -97,6 +114,55 @@ void APlayerBoxer::Tick(float DeltaTime)
     {
         FeedbackComponent->SetFOVOffset(4.f);
     }
+}
+
+void APlayerBoxer::UpdateArcadeCamera(float DeltaTime)
+{
+    SwayTime += DeltaTime;
+
+    // Pull the camera back as the fighters separate so both stay framed.
+    float Sep = 300.f;
+    if (AActor* Opp = OpponentRef.Get())
+    {
+        Sep = FVector::Dist2D(GetActorLocation(), Opp->GetActorLocation());
+    }
+    const float DesiredArm = FMath::Clamp(520.f + Sep * 0.55f, 520.f, 900.f);
+    CameraBoom->TargetArmLength = FMath::FInterpTo(CameraBoom->TargetArmLength, DesiredArm, DeltaTime, 3.f);
+
+    // Gentle idle sway.
+    const float SwayYaw = FMath::Sin(SwayTime * 0.6f) * 1.5f;
+    const float SwayPitch = FMath::Sin(SwayTime * 0.45f) * 0.8f;
+    CameraBoom->SetWorldRotation(FRotator(-14.f + SwayPitch, 70.f + SwayYaw, 0.f));
+
+    // FOV: base + per-phase feedback offset + decaying impact pulse.
+    ImpactZoom = FMath::FInterpTo(ImpactZoom, 0.f, DeltaTime, 6.f);
+    const float FOVOffset = FeedbackComponent->GetFOVOffset();
+    FollowCamera->FieldOfView = BaseFOV + FOVOffset + ImpactZoom;
+}
+
+void APlayerBoxer::PlayImpactShake(bool bHeavy)
+{
+    if (APlayerController* PC = Cast<APlayerController>(GetController()))
+    {
+        TSubclassOf<UCameraShakeBase> Shake = bHeavy ? ShakeHeavy : ShakeLight;
+        if (Shake)
+        {
+            PC->ClientStartCameraShake(Shake, 1.f);
+        }
+    }
+    ImpactZoom = bHeavy ? -7.f : -3.f;
+}
+
+void APlayerBoxer::OnPlayerLandedHit(AActor* Target, FAttackData AttackData)
+{
+    const bool bHeavy = AttackData.bCausesScreenFlash || AttackData.Damage >= 15.f;
+    PlayImpactShake(bHeavy);
+}
+
+void APlayerBoxer::ReceiveHit_Implementation(FAttackData AttackData, AActor* Attacker)
+{
+    Super::ReceiveHit_Implementation(AttackData, Attacker);
+    PlayImpactShake(AttackData.Damage >= 18.f);
 }
 
 void APlayerBoxer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

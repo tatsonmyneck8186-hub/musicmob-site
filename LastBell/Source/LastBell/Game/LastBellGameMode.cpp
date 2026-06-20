@@ -55,6 +55,8 @@ void ALastBellGameMode::StartMatch(UFighterDataAsset* OpponentData)
     CurrentRound = 0;
     PlayerRoundWins = 0;
     AIRoundWins = 0;
+    bMatchPlayerWon = false;
+    SetMatchState(EMatchState::WaitingToStart);
 
     GetWorldTimerManager().SetTimer(RoundTimerHandle, [this]()
     {
@@ -69,8 +71,8 @@ void ALastBellGameMode::StartRound()
     SetMatchState(EMatchState::RoundActive);
     OnRoundChanged.Broadcast(CurrentRound, TotalRounds);
 
-    if (PlayerBoxer) PlayerBoxer->StatsComponent->ResetForNewRound();
-    if (AIBoxerRef)  AIBoxerRef->StatsComponent->ResetForNewRound();
+    if (PlayerBoxer) { PlayerBoxer->ResetState(); PlayerBoxer->StatsComponent->ResetForNewRound(); }
+    if (AIBoxerRef)  { AIBoxerRef->ResetState();  AIBoxerRef->StatsComponent->ResetForNewRound(); }
 
     if (PlayerBoxer) PlayerBoxer->SetBoxerEnabled(true);
     if (AIBoxerRef)  AIBoxerRef->SetBoxerEnabled(true);
@@ -165,10 +167,16 @@ void ALastBellGameMode::KnockdownCountTick()
 
 void ALastBellGameMode::FinalizeMatch()
 {
-    bool bPlayerWon = (PlayerRoundWins > AIRoundWins);
+    bMatchPlayerWon = (PlayerRoundWins > AIRoundWins);
     SetMatchState(EMatchState::MatchOver);
-    OnMatchEnd.Broadcast(bPlayerWon);
+    OnMatchEnd.Broadcast(bMatchPlayerWon);
+    HandleMatchEnd(bMatchPlayerWon);
+}
 
+void ALastBellGameMode::HandleMatchEnd(bool bPlayerWon)
+{
+    // Default (authored-map) path: transition to the win/lose level after a beat.
+    // The arena (code-only) game mode overrides this to stay in-world.
     FString MapName = bPlayerWon ? TEXT("/Game/LastBell/Maps/L_WinScreen") : TEXT("/Game/LastBell/Maps/L_LoseScreen");
     GetWorldTimerManager().SetTimer(RoundTimerHandle, [this, MapName]()
     {
