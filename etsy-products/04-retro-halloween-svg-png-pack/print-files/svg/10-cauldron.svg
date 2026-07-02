@@ -1,0 +1,17 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1500 1800'>
+<circle cx='630.0' cy='560' r='44' fill='#7E9C4E' stroke='#3A2A20' stroke-width='12'/>
+<circle cx='790.0' cy='460' r='62' fill='#7E9C4E' stroke='#3A2A20' stroke-width='12'/>
+<circle cx='940.0' cy='580' r='36' fill='#F2A93B' stroke='#3A2A20' stroke-width='12'/>
+<circle cx='720.0' cy='640' r='26' fill='#7E9C4E' stroke='#3A2A20' stroke-width='12'/>
+<ellipse cx='750.0' cy='800' rx='330' ry='90' fill='#7E9C4E' stroke='#3A2A20' stroke-width='16'/>
+<path d='M 420.0 800 Q 370.0 820 390.0 880 Q 410.0 1240 750.0 1290 Q 1090.0 1240 1110.0 880 Q 1130.0 820 1080.0 800 Q 750.0 880 420.0 800 Z' fill='#6C4E8E' stroke='#3A2A20' stroke-width='18' stroke-linejoin='round'/>
+<path d='M 550.0 1250 L 500.0 1370' stroke='#3A2A20' stroke-width='40' stroke-linecap='round' fill='none'/>
+<path d='M 950.0 1250 L 1000.0 1370' stroke='#3A2A20' stroke-width='40' stroke-linecap='round' fill='none'/>
+<path d='M 600.0 830 q 0 90 -34 96 q -30 6 -30 -40 q 0 -50 30 -70 Z' fill='#7E9C4E' stroke='#3A2A20' stroke-width='12' stroke-linejoin='round'/>
+<path d='M 578.0 1000 Q 630.0 932.4 682.0 1000' fill='none' stroke='#F2A93B' stroke-width='18' stroke-linecap='round'/><path d='M 818.0 1000 Q 870.0 932.4 922.0 1000' fill='none' stroke='#F2A93B' stroke-width='18' stroke-linecap='round'/>
+<path d='M 670.0 1100 Q 750.0 1180 830.0 1100' fill='none' stroke='#F2A93B' stroke-width='18' stroke-linecap='round'/>
+<path d='M 310.0 648 Q 310.0 700 362.0 700 Q 310.0 700 310.0 752 Q 310.0 700 258.0 700 Q 310.0 700 310.0 648 Z' fill='#EE7A1E'/>
+<path d='M 1210.0 714 Q 1210.0 760 1256.0 760 Q 1210.0 760 1210.0 806 Q 1210.0 760 1164.0 760 Q 1210.0 760 1210.0 714 Z' fill='#F2A93B'/>
+<polygon points='1150.0,1256.0 1160.9,1285.0 1191.8,1286.4 1167.6,1305.7 1175.9,1335.6 1150.0,1318.5 1124.1,1335.6 1132.4,1305.7 1108.2,1286.4 1139.1,1285.0' fill='#B44819'/>
+<polygon points='330.0,1300.0 339.9,1326.4 368.0,1327.6 346.0,1345.2 353.5,1372.4 330.0,1356.8 306.5,1372.4 314.0,1345.2 292.0,1327.6 320.1,1326.4' fill='#EE7A1E'/>
+</svg>

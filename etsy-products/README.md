@@ -15,6 +15,7 @@ them.
 | 1 | Neutral Botanical Wall Art (set of 6) | 18 PNGs, 300 DPI, 3 ratios | $6.99 |
 | 2 | 2026 Budget Planner (10 pages) | US Letter + A4 PDFs | $5.99 |
 | 3 | Daily Affirmation Cards (36 cards) | US Letter + A4 PDFs | $4.99 |
+| 4 | Retro Halloween SVG/PNG Pack (15 designs) | 15 SVGs + 15 transparent PNGs (4500x5400, 300 DPI) | $7.99 |
 
 Each product folder contains:
 - `print-files/` — the actual files buyers download
@@ -31,6 +32,7 @@ Each product folder contains:
    - Etsy allows max 5 files per listing at 20 MB each.
    - Wall art: zip each ratio folder (`2x3.zip`, `4x5.zip`, `iso.zip`) and upload the 3 zips.
    - Planners/cards: upload the 2 PDFs directly.
+   - Halloween pack: upload `etsy-upload-svg.zip` and `etsy-upload-png.zip` (already built).
 6. Publish ($0.20 listing fee)
 
 ## Tips that actually move sales
@@ -50,6 +52,7 @@ Everything is generated from code in `tools/` (Python, needs
 - `botanicals.py` — wall art set (edit palette or add designs)
 - `budget_planner.py` — planner pages (change the year on the cover for 2027)
 - `affirmation_cards.py` — card deck (swap affirmation text freely)
-- `previews.py` — listing hero images
+- `halloween_pack.py` — retro Halloween SVG/PNG pack (needs `pip install fonttools`)
+- `previews.py` / `halloween_preview.py` — listing hero images
 
 Run any script directly, e.g. `python3 tools/botanicals.py`.

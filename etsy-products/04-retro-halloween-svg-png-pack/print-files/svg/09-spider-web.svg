@@ -1,0 +1,30 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1500 1800'>
+<path d='M 920.0 430.0 Q 891.9 458.2 907.1 495.1 Q 870.3 510.4 870.2 550.2 Q 830.4 550.3 815.1 587.1 Q 778.2 571.9 750.0 600.0 Q 721.8 571.9 684.9 587.1 Q 669.6 550.3 629.8 550.2 Q 629.7 510.4 592.9 495.1 Q 608.1 458.2 580.0 430.0' fill='none' stroke='#3A2A20' stroke-width='14'/>
+<path d='M 1050.0 430.0 Q 1000.3 479.8 1027.2 544.8 Q 962.2 571.8 962.1 642.1 Q 891.8 642.2 864.8 707.2 Q 799.8 680.3 750.0 730.0 Q 700.2 680.3 635.2 707.2 Q 608.2 642.2 537.9 642.1 Q 537.8 571.8 472.8 544.8 Q 499.7 479.8 450.0 430.0' fill='none' stroke='#3A2A20' stroke-width='14'/>
+<path d='M 1180.0 430.0 Q 1108.8 501.4 1147.3 594.6 Q 1054.2 633.2 1054.1 734.1 Q 953.2 734.2 914.6 827.3 Q 821.4 788.8 750.0 860.0 Q 678.6 788.8 585.4 827.3 Q 546.8 734.2 445.9 734.1 Q 445.8 633.2 352.7 594.6 Q 391.2 501.4 320.0 430.0' fill='none' stroke='#3A2A20' stroke-width='14'/>
+<path d='M 1310.0 430.0 Q 1217.3 522.9 1267.4 644.3 Q 1146.1 694.7 1146.0 826.0 Q 1014.7 826.1 964.3 947.4 Q 842.9 897.3 750.0 990.0 Q 657.1 897.3 535.7 947.4 Q 485.3 826.1 354.0 826.0 Q 353.9 694.7 232.6 644.3 Q 282.7 522.9 190.0 430.0' fill='none' stroke='#3A2A20' stroke-width='14'/>
+<line x1='750.0' y1='430' x2='1310.0' y2='430.0' stroke='#3A2A20' stroke-width='14'/>
+<line x1='750.0' y1='430' x2='1267.4' y2='644.3' stroke='#3A2A20' stroke-width='14'/>
+<line x1='750.0' y1='430' x2='1146.0' y2='826.0' stroke='#3A2A20' stroke-width='14'/>
+<line x1='750.0' y1='430' x2='964.3' y2='947.4' stroke='#3A2A20' stroke-width='14'/>
+<line x1='750.0' y1='430' x2='750.0' y2='990.0' stroke='#3A2A20' stroke-width='14'/>
+<line x1='750.0' y1='430' x2='535.7' y2='947.4' stroke='#3A2A20' stroke-width='14'/>
+<line x1='750.0' y1='430' x2='354.0' y2='826.0' stroke='#3A2A20' stroke-width='14'/>
+<line x1='750.0' y1='430' x2='232.6' y2='644.3' stroke='#3A2A20' stroke-width='14'/>
+<line x1='750.0' y1='430' x2='190.0' y2='430.0' stroke='#3A2A20' stroke-width='14'/>
+<line x1='750.0' y1='990' x2='750.0' y2='1240' stroke='#3A2A20' stroke-width='12'/>
+<circle cx='750.0' cy='1330' r='90' fill='#EE7A1E' stroke='#3A2A20' stroke-width='16'/>
+<circle cx='750.0' cy='1240' r='46' fill='#3A2A20'/>
+<path d='M 750.0 1320 Q 645.0 1284.0 600.0 1290' fill='none' stroke='#3A2A20' stroke-width='14' stroke-linecap='round'/>
+<path d='M 750.0 1328 Q 631.0 1308.0 580.0 1350' fill='none' stroke='#3A2A20' stroke-width='14' stroke-linecap='round'/>
+<path d='M 750.0 1336 Q 638.0 1336.0 590.0 1420' fill='none' stroke='#3A2A20' stroke-width='14' stroke-linecap='round'/>
+<path d='M 750.0 1344 Q 659.0 1360.0 620.0 1480' fill='none' stroke='#3A2A20' stroke-width='14' stroke-linecap='round'/>
+<path d='M 750.0 1320 Q 855.0 1284.0 900.0 1290' fill='none' stroke='#3A2A20' stroke-width='14' stroke-linecap='round'/>
+<path d='M 750.0 1328 Q 869.0 1308.0 920.0 1350' fill='none' stroke='#3A2A20' stroke-width='14' stroke-linecap='round'/>
+<path d='M 750.0 1336 Q 862.0 1336.0 910.0 1420' fill='none' stroke='#3A2A20' stroke-width='14' stroke-linecap='round'/>
+<path d='M 750.0 1344 Q 841.0 1360.0 880.0 1480' fill='none' stroke='#3A2A20' stroke-width='14' stroke-linecap='round'/>
+<path d='M 700.0 1320 Q 716.0 1299.2 732.0 1320' fill='none' stroke='#3A2A20' stroke-width='10' stroke-linecap='round'/><path d='M 768.0 1320 Q 784.0 1299.2 800.0 1320' fill='none' stroke='#3A2A20' stroke-width='10' stroke-linecap='round'/>
+<path d='M 728.0 1352 Q 750.0 1376 772.0 1352' fill='none' stroke='#3A2A20' stroke-width='10' stroke-linecap='round'/>
+<path d='M 270.0 1134 Q 270.0 1180 316.0 1180 Q 270.0 1180 270.0 1226 Q 270.0 1180 224.0 1180 Q 270.0 1180 270.0 1134 Z' fill='#F2A93B'/>
+<path d='M 1230.0 1134 Q 1230.0 1180 1276.0 1180 Q 1230.0 1180 1230.0 1226 Q 1230.0 1180 1184.0 1180 Q 1230.0 1180 1230.0 1134 Z' fill='#6C4E8E'/>
+</svg>
