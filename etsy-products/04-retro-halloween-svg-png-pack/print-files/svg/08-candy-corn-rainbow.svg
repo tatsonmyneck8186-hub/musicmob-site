@@ -1,0 +1,15 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1500 1800'>
+<path d='M 230.0 1120 A 520 520 0 0 1 1270.0 1120' fill='none' stroke='#F2E1C1' stroke-width='96' stroke-linecap='round'/>
+<path d='M 230.0 1120 A 520 520 0 0 1 1270.0 1120' fill='none' stroke='#3A2A20' stroke-width='8' stroke-opacity='0.0'/>
+<path d='M 330.0 1120 A 420 420 0 0 1 1170.0 1120' fill='none' stroke='#EE7A1E' stroke-width='96' stroke-linecap='round'/>
+<path d='M 330.0 1120 A 420 420 0 0 1 1170.0 1120' fill='none' stroke='#3A2A20' stroke-width='8' stroke-opacity='0.0'/>
+<path d='M 430.0 1120 A 320 320 0 0 1 1070.0 1120' fill='none' stroke='#F2A93B' stroke-width='96' stroke-linecap='round'/>
+<path d='M 430.0 1120 A 320 320 0 0 1 1070.0 1120' fill='none' stroke='#3A2A20' stroke-width='8' stroke-opacity='0.0'/>
+<g transform='translate(330.0 1270) rotate(8)'><path d='M -70 60 L 0 -120 L 70 60 Q 0 110 -70 60 Z' fill='#F2E1C1' stroke='#3A2A20' stroke-width='14' stroke-linejoin='round'/><path d='M -47 0 L 47 0 L 70 60 Q 0 110 -70 60 Z' fill='#EE7A1E' stroke='#3A2A20' stroke-width='14' stroke-linejoin='round'/><path d='M -70 60 Q 0 110 70 60 L 58 30 Q 0 72 -58 30 Z' fill='#F2A93B' stroke='#3A2A20' stroke-width='12' stroke-linejoin='round'/></g>
+<g transform='translate(1170.0 1270) rotate(-8)'><path d='M -70 60 L 0 -120 L 70 60 Q 0 110 -70 60 Z' fill='#F2E1C1' stroke='#3A2A20' stroke-width='14' stroke-linejoin='round'/><path d='M -47 0 L 47 0 L 70 60 Q 0 110 -70 60 Z' fill='#EE7A1E' stroke='#3A2A20' stroke-width='14' stroke-linejoin='round'/><path d='M -70 60 Q 0 110 70 60 L 58 30 Q 0 72 -58 30 Z' fill='#F2A93B' stroke='#3A2A20' stroke-width='12' stroke-linejoin='round'/></g>
+<path d='M 750.0 400 Q 750.0 460 810.0 460 Q 750.0 460 750.0 520 Q 750.0 460 690.0 460 Q 750.0 460 750.0 400 Z' fill='#6C4E8E'/>
+<polygon points='370.0,512.0 381.8,543.7 415.7,545.2 389.2,566.2 398.2,598.8 370.0,580.2 341.8,598.8 350.8,566.2 324.3,545.2 358.2,543.7' fill='#B44819'/>
+<polygon points='1130.0,512.0 1141.8,543.7 1175.7,545.2 1149.2,566.2 1158.2,598.8 1130.0,580.2 1101.8,598.8 1110.8,566.2 1084.3,545.2 1118.2,543.7' fill='#B44819'/>
+<path d='M 130.0 954 Q 130.0 1000 176.0 1000 Q 130.0 1000 130.0 1046 Q 130.0 1000 84.0 1000 Q 130.0 1000 130.0 954 Z' fill='#F2A93B'/>
+<path d='M 1370.0 954 Q 1370.0 1000 1416.0 1000 Q 1370.0 1000 1370.0 1046 Q 1370.0 1000 1324.0 1000 Q 1370.0 1000 1370.0 954 Z' fill='#F2A93B'/>
+</svg>
